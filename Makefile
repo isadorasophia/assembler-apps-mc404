@@ -1,5 +1,5 @@
-LIB_PATH = /usr/lib64/
-#/usr/lib/x86_64-linux-gnu
+# obs: path from my pc is /usr/lib/x86_64-linux-gnu
+LIB_PATH = /usr/lib64
 
 main.s: main.c
 	gcc -S main.c -o main.s
@@ -21,8 +21,8 @@ log.o: log.s
 
 prog.x: main.o math.o log.o
 	ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 $(LIB_PATH)/crt1.o \
-    $(LIB_PATH)/crti.o -L/usr/lib64 main.o math.o log.o -lc \
-    $(LIB_PATH)/crtn.o -o prog.x
+	$(LIB_PATH)/crti.o -L/usr/lib64 main.o math.o log.o -lc \
+	$(LIB_PATH)/crtn.o -o prog.x
 
 clean:
 	rm -f main.s math.s log.s main.o math.o log.o prog.x
