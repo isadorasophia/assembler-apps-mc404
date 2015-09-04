@@ -43,7 +43,7 @@
 # ADD M(03e)               | adds at sum
 # STOR M(03e)              | saves at sum
 #
-## while (i <= size - 1) --> while (0 <= size - i - 1)
+## while (i <= size - 1) ~> while (0 <= size - i - 1)
 # LOAD -M(03c)             | negative index (array no. 1), -i + memory
 # ADD M(3fd)               | add first index memory, -i + memory - memory
 # ADD M(3ff)               | finally, adds the size - 1, -i - 1 + size
@@ -56,7 +56,7 @@
 # ---------------------------------------------- #
 #   1.2 machine language                         #
 # ---------------------------------------------- #
-## Copy the memory of the first element of 
+## Copy the memory of the first element of
 ## each array to program data.
 000 01 3fd 21 03c          # AC := M(3fd);       M(03c) := AC
 001 01 3fe 21 03d          # AC := M(3fe);       M(03d) := AC
@@ -67,7 +67,7 @@
 
 ## Loop
 # array no. 1&2
-004 13 007 05 03f          # STOR M(008, 28:39); AC := AC + M(03f)
+004 13 007 05 03f          # STOR M(007, 28:39); AC := AC + M(03f)
 005 21 03c 01 03d          # M(03c) := AC;       AC := M(03d);
 
 # array no. 2&operations
@@ -94,7 +94,7 @@
 
 # ---------------------------------------------- #
 #                                                #
-# 2. Array data                                  #
+# 2. array data                                  #
 # Stores the data of both arrays which are       #
 # used in the program.                           #
 #                                                #
@@ -104,15 +104,10 @@
 #
 # ---------------------------------------------- #
 #                                                #
-# 3. Array handlers                              #
+# 3. array handlers                              #
 # Keep track of the index and total size.        #
 #                                                #
 # ---------------------------------------------- #
-# first index of array no. 1
-3fd 00 00 00 00 00
-
-# first index of array no. 2
-3fe 00 00 00 00 00
-
-# total size of the array
-3ff 00 00 00 00 02
+3fd 00 00 00 00 00         # first index of array no. 1
+3fe 00 00 00 00 00         # first index of array no. 2
+3ff 00 00 00 00 02         # total size of the array
