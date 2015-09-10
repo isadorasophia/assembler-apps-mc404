@@ -30,3 +30,20 @@ void initializeMemory(MemMap* memMap) {
         strcpy (memMap[i].content[right], "00000");
     }
 }
+
+/** 
+ * Helper function in order to make regex validation easier
+ *
+ * return:          if the given string matches the regular expression
+ */
+bool match(regex_t* re, const char* word) {
+    // function param
+    regmatch_t t[1];
+
+    // finally, check if it matches...
+    if (regexec(re, word, 1, t, 0) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}

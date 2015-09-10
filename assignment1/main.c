@@ -29,42 +29,48 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <regex.h>                  // regular expressions
-#include <search.h>                 // enables binary tree search
+#include <regex.h>              // regular expressions
+#include <search.h>             // enables binary search tree
 
 #include "data_structure.h"
 #include "linkedlist.h"
+#include "error.h"
+#include "data_access.h"
 
 int main () {
-    printf("Testing binary tree...\n");
+    regex_t label, instr, directive,
+            hex, decimal;
 
-    void* root = NULL;
+    /* Set each regex by its pattern */
+    regcomp(&label, "^[_a-zA-Z][a-zA-Z0-9_]*:", REG_EXTENDED);
+    regcomp(&instr, "^[_a-zA-Z][a-zA-Z0-9_]*:", REG_EXTENDED);
+    regcomp(&directive, "^[_a-zA-Z][a-zA-Z0-9_]*:", REG_EXTENDED);
+    regcomp(&hex, "0x[a-fA-F0-9]+:", REG_EXTENDED);
+    regcomp(&decimal, "[0-9]+:", REG_EXTENDED);
+    
+    if (match(&label, "d:"))
+        printf("It matches!\n");
+    else
+        printf("It doens\'t match...\n");
 
-    String_map* a = malloc (sizeof(String_map));
-    a->key = strdup("aaaa");
-    a->value = 1;
+    /* Free! */
+    regfree(&label);
+    regfree(&instr);
+    regfree(&directive);
+    regfree(&hex);
+    regfree(&decimal);
 
-    tsearch(a, &root, comparStr);
+    File test;
 
-    String_map* find_a = malloc(sizeof(String_map));
-    find_a->key = strdup("aaaa");
+    initializeFile(&test, "test.txt");
 
-    void* r = tfind(find_a, &root, comparStr); /* read */
-    printf("Result is %d, success!\n", (*(String_map**)r)->value);
-
-    printf("Testing linked list...\n");
-    Node* d = NULL;
-    char* b;
-
-    push(&d, "hi");
-
-    b = strdup(pop(&d));
-
-    if (empty(d)) {
-        printf("Result is %s, success!\n", b);
+    while(readFile(&test)) {
+        printf("%s", test.buffer);
     }
 
-    free(b);
+    printf("\nTotal of n. of lines is: %d\n", test.line);
+
+    cleanFile(&test);
 
     return 0;
 }

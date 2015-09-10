@@ -1,3 +1,5 @@
+#include <regex.h>              // regex validation
+
 /* Max size of the memory map */
 #define MAX_WORDS 1024
 
@@ -13,6 +15,9 @@ typedef int bool;
  */
 #define left    0
 #define right   1
+
+/* Default model of each text line */
+typedef enum Model { LABEL, INSTR, DIRECTIVE, ARG } Model;
 
 /**
  * Data structure to inform a position in the final output.
@@ -66,3 +71,6 @@ typedef struct String_map {
 
 /* Search for a key */
 int comparStr(const void *l, const void *r);
+
+/* In order to make regex validation easier */
+bool match(regex_t* re, const char* word);

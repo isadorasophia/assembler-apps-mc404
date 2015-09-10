@@ -4,12 +4,14 @@
 #include <string.h>
 
 /**
- * Pop a node of the list, returning label of removed node
+ * Pop a node of the list.
+ * 
+ * return:                  label of removed node
  */
 char* pop (Node** node) {
     // list is empty, ignore
     if (node == NULL) {
-        return;
+        return NULL;
     }
     else {
         Node* tmp = *node;
@@ -40,7 +42,7 @@ void push (Node** node, char* item) {
 }
 
 /**
- * Return if a given list is empty
+ * Check if a given list is empty
  */
 bool empty (Node* node) {
     if (node == NULL)
