@@ -1,3 +1,9 @@
+/* ***********************************************************************
+ * 
+ *                       Linked list (implementation)
+ * Description: standard linked list operations.
+ *
+ * ********************************************************************* */
 #include "data_structure.h"
 #include "linkedlist.h"
 
@@ -49,4 +55,16 @@ bool empty (Node* node) {
         return true;
     else
         return false;
+}
+
+/**
+ * Clean up the whole list
+ */
+void clean_list (Node** node) {
+    while ((*node) != NULL) {
+        Node* tmp = *node;
+        (*node) = (*node)->next;
+
+        free(*node);
+    }
 }

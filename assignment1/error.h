@@ -1,13 +1,26 @@
-/***************************************************************
- * Description: Error reporting API
- * Author: Edson Borin (edson@ic.unicamp.br)
- ***************************************************************/
-#ifndef _ERROR_H
-#define _ERROR_H
+/* ********************************************************************* *
+ * 
+ *                                 Error
+ * Description: responsible for reporting errors that occurred during
+ * the execution.
+ *
+ * ********************************************************************* */
+#ifndef ERROR_H
+#define ERROR_H
+
+#include <stdio.h>
+
+/* File error flag */
+#ifndef FILE_ERROR
+#define FILE_ERROR -1
+#endif
 
 /* Reports an error message. 
- * line is the input line number.
- * exit_code is the exit code. */ 
-void report_error(char* msg, int line, int exit_code);
+ *
+ * line:            input line number (FILE_ERROR if none)
+ * exit_code:       the exit code.
+ * output:          where the message will be printed
+ */
+void report_error(FILE* output, char* msg, int line, int exit_code);
 
 #endif

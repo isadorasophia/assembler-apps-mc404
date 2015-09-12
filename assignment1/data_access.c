@@ -1,40 +1,94 @@
+/* ********************************************************************* *
+ * 
+ *                        Data access (implementation)
+ * Description: responsible for the communication between the program
+ * and the input and output.
+ *
+ * ********************************************************************* */
+
 #include "data_structure.h"
 #include "data_access.h"
+
+#include "error.h"
 
 /**
  * Initialize file data structure
  */
-void initializeFile (File* f, const char* filename) {
-    f->f = fopen(filename, "r");
+void initialize_file (File* f, const char* input, const char* output) {
+    // if the output string is empty, set default output
+    if (strlen(output) <= 0) {
+        f->out = stdout;
+    } else {
+        f->out = fopen(input, "w");
+    }
+
+    // if the file could not be open
+    if (f->out == NULL) {
+        report_error(f->out, strcat(output, " could not be open."), FILE_ERROR, 1);
+    }
+
+    f->in = fopen(input, "r");
+
+    // if the file could not be found
+    if (f->in == NULL) {
+        report_error(f->out, strcat(input, " could not be found."), FILE_ERROR, 1);
+    }
 
     f->line = 1;
 }
 
 /**
- * Read from file and set to the buffer.
+ * Read a valid string from file and set to the buffer.
  * 
- * return:          if it was a succesful read
+ * return:          if it was a successful read
  */
-bool readFile (File* f) {
-    // check file status
-    int c = fgetc(f->f);
+bool read_file (File* f) {
+    char    garbage[GARBAGE_SIZE];      // garbage buffer
+    char*   p,                          // helper
+            c;
 
-    // new line! just keep going
-    while (c == '\n') {
-        f->line++;
+    // first, check file status
+    c = fgetc(f->in);
 
-        c = fgetc(f->f);
+    // get rid of skippable text
+    while (c == ' ' || c == '\n' || c == '#') {
+        // new line! just keep going
+        if (c == '\n') {
+            f->line++;
+
+            c = fgetc(f->in);
+        } 
+        // comment line, just skip the entire line
+        else if (c == '#') {
+            fscanf(f->in, "%[^\n]", garbage);
+
+            c = fgetc(f->in);
+        } 
+        // space, find next useful character
+        else if (c == ' ') {
+            c = fgetc(f->in);
+        }
     }
 
     if (c == EOF) {
-        // program has ended
+        // program has ended, go home
         return false;
     } else {
-        // nothing new, just pretend it never happened
-        fseek(f->f, -1, SEEK_CUR);
+        // good to go, just pretend it never happened
+        fseek(f->in, -1, SEEK_CUR);
     }
 
-    fscanf(f->f, "%s", f->buffer);
+    fscanf(f->in, "%s", f->buffer);
+
+    // detect if there was a hash symbol in the string
+    p = strchr(f->buffer, '#');
+
+    // if it was found, get rid of it and go to next line!
+    if (p) {
+        (*p) = '\0';
+
+        fscanf(f->in, "%[^\n]", garbage);
+    }
 
     return true;
 }
@@ -42,8 +96,8 @@ bool readFile (File* f) {
 /**
  * Restore a file from the beginning
  */
-void refreshFile (File *f) {
-    rewind(f->f);
+void refresh_file (File *f) {
+    rewind(f->in);
 
     f->line = 1;
 }
@@ -51,6 +105,6 @@ void refreshFile (File *f) {
 /**
  * Clean up
  */
-void cleanFile (File *f) {
-    fclose(f->f);   
+void clean_file (File *f) {
+    fclose(f->in);   
 }
