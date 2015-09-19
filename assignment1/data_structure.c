@@ -21,14 +21,25 @@ int compar_label(const void *l, const void *r) {
     return strcmp (lm->key, lr->key);
 }
 
-/* Insert a value of type Label */
-void insert_label(const char* key, const Position value, void** root) {
+/* 
+ * Insert a value of type Label 
+ *
+ * return:         if succeeded (there are no duplicates)
+ */
+bool insert_label(const char* key, const Position value, void** root) {
     Label* t = malloc(sizeof(Label));
 
     t->key = strdup(key);
     t->value = value;
 
-    tsearch(t, root, compar_str);
+    // check if an element with given key already exists
+    if (tfind(t, root, compar_label)) {
+        return false;
+    } else {
+        tsearch(t, root, compar_label);
+
+        return true;
+    }
 }
 
 /**
@@ -41,7 +52,7 @@ bool find_label (const char* key, void** root, Position* result) {
     Label* t = malloc(sizeof(Label));
     t->key = strdup(key);
 
-    void* r = tfind(t, root, compar_str);
+    void* r = tfind(t, root, compar_label);
 
     if (r == NULL) {
         return false;
@@ -60,14 +71,25 @@ int compar_str(const void *l, const void *r) {
     return strcmp (lm->key, lr->key);
 }
 
-/* Insert a value of type String_map */
-void insert_str(const char* key, const int value, void** root) {
+/* 
+ * Insert a value of type String_map 
+ *
+ * return:         if succeeded (there are no duplicates)
+ */
+bool insert_str(const char* key, const int value, void** root) {
     String_map* t = malloc(sizeof(String_map));
 
     t->key = strdup(key);
     t->value = value;
 
-    tsearch(t, root, compar_str);
+    // check if an element with given key already exists
+    if (tfind(t, root, compar_str)) {
+        return false;
+    } else {
+        tsearch(t, root, compar_str);
+
+        return true;
+    }
 }
 
 /**
@@ -162,4 +184,106 @@ bool clean_constraints(char* w, bool check) {
     } else {
         return false;
     }
+}
+
+/**
+ * Updates the position to goal position or to the next 
+ * one available, report an error if it was not possible.
+ *
+ * to:              goal position or GO_NEXT to go to next
+ */
+void update_position(Position* p, const int to) {
+    if (to == GO_NEXT) {
+        if ((*p).state == left) {
+            (*p).state = right;
+        } else {
+            if ((*p).address + 1 < MAX_WORDS) {
+                (*p).state = left;
+                (*p).address++;
+            }
+
+            // if the no. of words has exceeded
+            else {
+                report_error(file.out, "Program has exceeded the limit of words!", -1, 1);
+            }
+        }
+    } 
+
+    // go to arbitrary position
+    else {
+        if (to + 1 < MAX_WORDS) {
+            (*p).state = left;
+            (*p).address = to;
+        }
+
+        // if the no. of words has exceeded
+        else {
+            report_error(file.out, "Program has exceeded the limit of 
+                words!", -1, 1);
+        }
+    }
+}
+
+/**
+ * Set all the labels from a list to a corresponding memory
+ */
+void set_labels(Node** l, String_map** labels, int mem, int line) {
+    char* tmp;
+
+    while (l != NULL) {
+        tmp = pop(l);
+
+        // check if something went wrong
+        if (!insert_str((*l)->label, mem, labels)) {
+            report_error(file.out, strcat((*l)->label, 
+                    " was already declared!"), -1, 1);
+        }
+
+        free(tmp);
+    }
+}
+
+/** 
+ * Read an argument converted in string, either in hex or decimal.
+ * Report an error if it wasn't declared correctly.
+ *
+ * return:          its value in decimal 
+ */
+int read_constant(char* buffer, int line) {
+    int tmp_int;
+
+    // is it decimal?
+    if (match(&dec_regex, buffer)) {
+        // save value
+        tmp_int = atoi(buffer);
+    }
+
+    // is it hex?
+    else if (match(&hex_regex, buffer)) {
+        // save value as decimal
+        sscanf(buffer, "%x", &tmp_int);
+    }
+
+    // none of them, report an error!
+    else {
+        report_error(file.out, strcat(buffer, " is not a valid argument!"), line, 1);
+    }
+
+    return tmp_int;
+}
+
+/**
+ * Find minimum multiple of n above value of min
+ *
+ * return:          result
+ */
+int min_mul(int n, int mim) {
+    int division = mim / n;
+
+    // if the division wasnt an integer, pick up the min above
+    if (division != 0) {
+        division += n;
+    }
+
+    return division;
 }

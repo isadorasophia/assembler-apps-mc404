@@ -18,6 +18,11 @@
 #define HEX_REGEX "^0x[a-fA-F0-9]{10}$"                 // 0x000...
 #define DEC_REGEX "^[0-9]{0,4}$"                        // 1
 
+/* Variables that apply each regex pattern */
+extern regex_t      label_regex, sym_regex,
+                    instr_regex, directive_regex,
+                    hex_regex, decimal_regex;
+
 /* Instructions definition */
 #define _LD 1
 #define _LD_MINUS 2
@@ -52,6 +57,11 @@ typedef int bool;
  */
 #define left    0
 #define right   1
+
+/**
+ * Flag used to handle the position function
+ */
+#define GO_NEXT -1
 
 /* Default model of each text line */
 typedef enum Model { LABEL, INSTR_OR_DIR, END } Model;
@@ -128,5 +138,17 @@ void initialize_instr(void** root);
 /* In order to make regex validation easier */
 bool match(regex_t* re, const char* word);
 bool clean_constraints(char* w, bool check);
+
+/* Updates the position to goal or simply to the next one */
+void update_position(Position* p, const int to);
+
+/* Set all the labels from a list to a corresponding memory */
+void set_labels(Node** l, String_map** labels, int mem);
+
+/* Read a number converted in string, either in hex or decimal */
+int read_constant(char* buffer, int line);
+
+/* Find minimum multiple of n above value of min */
+int min_mul(int n, int mim)
 
 #endif
