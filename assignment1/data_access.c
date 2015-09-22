@@ -19,7 +19,7 @@ void initialize_file (File* f, const char* input, const char* output) {
     if (strlen(output) <= 0) {
         f->out = stdout;
     } else {
-        f->out = fopen(input, "w");
+        f->out = fopen(output, "w");
     }
 
     // if the file could not be open
@@ -138,10 +138,13 @@ void skip_line (File* f) {
 
 /**
  * Read an argument and make the appropriate check
+ *
+ * cur_line:        line number, SKIP to ignore
  */
 void read_argument (File* f, int cur_line) {
     // check if an error occurred
-    if (!read_file(f) || cur_line != f->line) {
+    if (!read_file(f) || 
+        (cur_line != SKIP && cur_line != f->line)) {
         report_error(f->out, strcat(f->buffer, " is placed incorrectly!"), 
                      f->line, 1);
     }

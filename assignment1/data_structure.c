@@ -344,6 +344,34 @@ void hex_string(ld number, char* buffer, int max) {
     if (s > max) {
         memcpy(buffer, buffer + s - max, max + 1);
     }
+
+    // finally, format string
+    format_hex(buffer);
+}
+
+/**
+ * Format a hex string into default output, i.e., XX XXX XX XXX
+ *
+ * hex:             buffer must be bigger than WORD_SIZE + SPACE
+ */
+void format_hex(char* hex) {
+    char aux[WORD_SIZE + SPACES];
+
+    memcpy(aux, hex, 2);
+    aux[2] = ' ';
+
+    memcpy(aux + 3, hex + 2, 3);
+    aux[6] = ' ';
+
+    memcpy(aux + 7, hex + 5, 2);
+    aux[9] = ' ';
+
+    memcpy(aux + 10, hex + 7, 3);
+
+    // end
+    aux[13] = '\0';
+
+    strcpy(hex, aux);
 }
 
 /**
@@ -356,13 +384,17 @@ void fill_word(MemMap* map, Position* cur_pos, char* hex, FILE* output) {
 
     // apply first bigger digits
     memcpy(map[(*cur_pos).address].content[(*cur_pos).state], 
-           hex, 5);
+           hex, 6);
+
+    map[(*cur_pos).address].content[(*cur_pos).state][7] = '\0';
 
     update_position(cur_pos, GO_NEXT, output);
 
     // remaining digits
     memcpy(map[(*cur_pos).address].content[(*cur_pos).state], 
-           hex + 5, 5);
+           hex + 7, 6);
+
+    map[(*cur_pos).address].content[(*cur_pos).state][7] = '\0';
 
     update_position(cur_pos, GO_NEXT, output);
 }

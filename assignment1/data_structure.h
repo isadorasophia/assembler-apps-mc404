@@ -65,6 +65,8 @@ typedef int bool;
  * Word size in hex
  */
 #define WORD_SIZE 10
+/* Spaces in a default word output */
+#define SPACES 3
 
 /**
  * Handler
@@ -170,6 +172,9 @@ void check_40bit(Position, const char*, int, FILE*);
  */
 /* Turn a ld number into a hex string */
 void hex_string(ld, char*, int);
+
+/* Format a hex string into default output */
+void format_hex(char* hex);
 
 /* Fill a word with a constant value in current position
  * and proceed to next available memory */

@@ -112,6 +112,8 @@ int main (int argc, char *argv[]) {
         if (cur_line != file.line) {
             // new line, set expected input
             cur_model = LABEL;
+
+            cur_line = file.line;
         }
 
         if (match(&label_regex, file.buffer)) {
@@ -268,7 +270,7 @@ int main (int argc, char *argv[]) {
                 tmp_int = (int)value;
 
                 /* Get the argument! */
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // get rid of the constraints
                 clean_constraints(file.buffer, 0);
@@ -317,7 +319,7 @@ int main (int argc, char *argv[]) {
              * accordingly */
             if (!strcmp(file.buffer, ".set")) {
                 /* 1st argument! */
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // is it a valid sym?
                 if (match(&sym_regex, file.buffer)) {
@@ -325,7 +327,7 @@ int main (int argc, char *argv[]) {
                     strcpy(tmp_str, file.buffer);
 
                     /* 2nd argument! */
-                    read_argument(&file, cur_line);
+                    read_argument(&file, SKIP);
 
                     // read value
                     tmp_ld = read_constant(file.buffer, file.line, file.out,
@@ -340,7 +342,7 @@ int main (int argc, char *argv[]) {
                 }
             } else if (!strcmp(file.buffer, ".org")) {
                 /* 1st argument! */
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // read value
                 tmp_ld = read_constant(file.buffer, file.line, file.out,
@@ -351,7 +353,7 @@ int main (int argc, char *argv[]) {
                 update_position(&cur_pos, (int)tmp_ld, file.out);
             } else if (!strcmp(file.buffer, ".align")) {
                 /* 1st argument! */
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // read value
                 tmp_ld = read_constant(file.buffer, file.line, file.out,
@@ -369,14 +371,14 @@ int main (int argc, char *argv[]) {
                 update_position(&cur_pos, (int)tmp_ld, file.out);
             } else if (!strcmp(file.buffer, ".wfill")) {
                 /* 1st argument! */
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // read no. of words to be allocated
                 tmp_int = read_constant(file.buffer, file.line, file.out,
                                            &decimal_regex, &hex_regex);
 
                 /* 2nd argument! */
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // get rid of the constraints
                 clean_constraints(file.buffer, true);
@@ -406,7 +408,7 @@ int main (int argc, char *argv[]) {
                     fill_word(map, &cur_pos, tmp_str, file.out);
                 }
             } else if (!strcmp(file.buffer, ".word")) {
-                read_argument(&file, cur_line);
+                read_argument(&file, SKIP);
 
                 // get rid of the constraints
                 clean_constraints(file.buffer, true);
