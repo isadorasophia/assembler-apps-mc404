@@ -7,8 +7,7 @@
  * ********************************************************************* */
 #include "data_structure.h"
 
-#include <regex.h>
-#include <stdio.h>
+#include <string.h>
 
 /** 
  * Functions below are used for binary search tree implementation
@@ -24,12 +23,25 @@ int compar_label(const void *l, const void *r) {
 /* 
  * Insert a value of type Label 
  *
+ * sensitive:      if it should be case sensitive
  * return:         if succeeded (there are no duplicates)
  */
-bool insert_label(const char* key, const Position value, void** root) {
+bool insert_label(const char* key, const Position value, void** root, 
+                  bool sensitive) {
     Label* t = malloc(sizeof(Label));
 
-    t->key = strdup(key);
+    // copy string for further handling
+    int s = strlen(key);
+    char key_aux[s + 1];
+
+    strcpy(key_aux, key);
+
+    if (!sensitive) {
+        // convert into lowercase
+        strlwr(key_aux);
+    }
+
+    t->key = strdup(key_aux);
     t->value = value;
 
     // check if an element with given key already exists
@@ -45,12 +57,25 @@ bool insert_label(const char* key, const Position value, void** root) {
 /**
  * Find a given value in the binary search tree of type Label
  *
- * return:          if could find the value
+ * sensitive:       if it should be case sensitive
  * result:          inserts the respective found value
+ * return:          if could find the value
  */
-bool find_label (const char* key, void** root, Position* result) {
+bool find_label(const char* key, void** root, Position* result,
+                bool sensitive) {
     Label* t = malloc(sizeof(Label));
-    t->key = strdup(key);
+
+    // copy string for further handling
+    int s = strlen(key);
+    char key_aux[s];
+    strcpy(key_aux, key);
+
+    if (!sensitive) {
+        // convert into lowercase
+        strlwr(key_aux);
+    }
+
+    t->key = strdup(key_aux);
 
     void* r = tfind(t, root, compar_label);
 
@@ -74,12 +99,23 @@ int compar_str(const void *l, const void *r) {
 /* 
  * Insert a value of type String_map 
  *
- * return:         if succeeded (there are no duplicates)
+ * sensitive:       if it should be case sensitive
+ * return:          if succeeded (there are no duplicates)
  */
-bool insert_str(const char* key, const int value, void** root) {
+bool insert_str(const char* key, ld value, void** root, bool sensitive) {
     String_map* t = malloc(sizeof(String_map));
 
-    t->key = strdup(key);
+    // copy string for further handling
+    int s = strlen(key);
+    char key_aux[s];
+    strcpy(key_aux, key);
+
+    if (!sensitive) {
+        // convert into lowercase
+        strlwr(key_aux);
+    }
+
+    t->key = strdup(key_aux);
     t->value = value;
 
     // check if an element with given key already exists
@@ -95,12 +131,24 @@ bool insert_str(const char* key, const int value, void** root) {
 /**
  * Find a given value in the binary search tree of type String_map
  *
- * return:          if could find the value
+ * sensitive:       if it should be case sensitive
  * result:          inserts the respective found value
+ * return:          if could find the value
  */
-bool find_str(const char* key, void** root, int* result) {
+bool find_str(const char* key, void** root, ld* result, bool sensitive) {
     String_map* t = malloc(sizeof(String_map));
-    t->key = strdup(key);
+
+    // copy string for further handling
+    int s = strlen(key);
+    char key_aux[s];
+    strcpy(key_aux, key);
+
+    if (!sensitive) {
+        // convert into lowercase
+        strlwr(key_aux);
+    }
+
+    t->key = strdup(key_aux);
 
     void* r = tfind(t, root, compar_str);
 
@@ -117,11 +165,11 @@ bool find_str(const char* key, void** root, int* result) {
  * Initialize memory map
  */
 void initialize_mem(MemMap* memMap) {
-    for (int i; i < MAX_WORDS; i++) {
+    for (int i = 0; i < MAX_WORDS; i++) {
         memMap[i].used = false;
 
-        strcpy (memMap[i].content[left], "00000");
-        strcpy (memMap[i].content[right], "00000");
+        strcpy(memMap[i].content[left], "00 000");
+        strcpy(memMap[i].content[right], "00 000");
     }
 }
 
@@ -129,23 +177,43 @@ void initialize_mem(MemMap* memMap) {
  * Fill dictionary of instructions
  */
 void initialize_instr(void** root) {
-    insert_str("LD", _LD, root);
-    insert_str("LD-", _LD_MINUS, root);
-    insert_str("LD|", _LD_MODULUS, root);
-    insert_str("LDmq", _LDmq, root);
-    insert_str("LDmq_mx", _LDmq_mx, root);
-    insert_str("ST", _ST, root);
-    insert_str("JMP", _JMP, root);
-    insert_str("JUMP+", _JUMP_PLUS, root);
-    insert_str("ADD", _ADD, root);
-    insert_str("ADD|", _ADD_MODULUS, root);
-    insert_str("SUB", _SUB, root);
-    insert_str("SUB|", _SUB_MODULUS, root);
-    insert_str("MUL", _MUL, root);
-    insert_str("DIF", _DIF, root);
-    insert_str("LSH", _LSH, root);
-    insert_str("RSH", _RSH, root);
-    insert_str("STaddr", _STaddr, root);
+    insert_str("LD", _LD, root, true);
+    insert_str("LD-", _LD_MINUS, root, true);
+    insert_str("LD|", _LD_MODULUS, root, true);
+    insert_str("LDmq", _LDmq, root, true);
+    insert_str("LDmq_mx", _LDmq_mx, root, true);
+    insert_str("ST", _ST, root, true);
+    insert_str("JMP", _JMP, root, true);
+    insert_str("JUMP+", _JUMP_PLUS, root, true);
+    insert_str("ADD", _ADD, root, true);
+    insert_str("ADD|", _ADD_MODULUS, root, true);
+    insert_str("SUB", _SUB, root, true);
+    insert_str("SUB|", _SUB_MODULUS, root, true);
+    insert_str("MUL", _MUL, root, true);
+    insert_str("DIF", _DIF, root, true);
+    insert_str("LSH", _LSH, root, true);
+    insert_str("RSH", _RSH, root, true);
+    insert_str("STaddr", _STaddr, root, true);
+}
+
+/**
+ * Set all the labels from a list to a corresponding memory
+ */
+void set_labels(Node** l, void** labels, Position mem, int line, 
+                FILE* output) {
+    char* tmp;
+
+    while (*l != NULL) {
+        tmp = pop(l);
+
+        // check if something went wrong
+        if (!insert_label(tmp, mem, labels, false)) {
+            report_error(output, strcat((*l)->label, 
+                    " was already declared!"), -1, 1);
+        }
+
+        free(tmp);
+    }
 }
 
 /** 
@@ -181,6 +249,12 @@ bool clean_constraints(char* w, bool check) {
         w[size - 2] = '\0';
 
         return true;
+    } else if (w[size - 1] == ":") {
+        memmove(w, w, size - 1);
+
+        w[size - 1] = '\0';
+
+        return true;
     } else {
         return false;
     }
@@ -192,7 +266,7 @@ bool clean_constraints(char* w, bool check) {
  *
  * to:              goal position or GO_NEXT to go to next
  */
-void update_position(Position* p, const int to) {
+void update_position(Position* p, const int to, FILE* output) {
     if (to == GO_NEXT) {
         if ((*p).state == left) {
             (*p).state = right;
@@ -204,7 +278,7 @@ void update_position(Position* p, const int to) {
 
             // if the no. of words has exceeded
             else {
-                report_error(file.out, "Program has exceeded the limit of words!", -1, 1);
+                report_error(output, "Program has exceeded the limit of words!", -1, 1);
             }
         }
     } 
@@ -218,58 +292,10 @@ void update_position(Position* p, const int to) {
 
         // if the no. of words has exceeded
         else {
-            report_error(file.out, "Program has exceeded the limit of 
-                words!", -1, 1);
+            report_error(output, 
+                         "Program has exceeded the limit of words!", -1, 1);
         }
     }
-}
-
-/**
- * Set all the labels from a list to a corresponding memory
- */
-void set_labels(Node** l, String_map** labels, int mem, int line) {
-    char* tmp;
-
-    while (l != NULL) {
-        tmp = pop(l);
-
-        // check if something went wrong
-        if (!insert_str((*l)->label, mem, labels)) {
-            report_error(file.out, strcat((*l)->label, 
-                    " was already declared!"), -1, 1);
-        }
-
-        free(tmp);
-    }
-}
-
-/** 
- * Read an argument converted in string, either in hex or decimal.
- * Report an error if it wasn't declared correctly.
- *
- * return:          its value in decimal 
- */
-int read_constant(char* buffer, int line) {
-    int tmp_int;
-
-    // is it decimal?
-    if (match(&dec_regex, buffer)) {
-        // save value
-        tmp_int = atoi(buffer);
-    }
-
-    // is it hex?
-    else if (match(&hex_regex, buffer)) {
-        // save value as decimal
-        sscanf(buffer, "%x", &tmp_int);
-    }
-
-    // none of them, report an error!
-    else {
-        report_error(file.out, strcat(buffer, " is not a valid argument!"), line, 1);
-    }
-
-    return tmp_int;
 }
 
 /**
@@ -286,4 +312,86 @@ int min_mul(int n, int mim) {
     }
 
     return division;
+}
+
+/**
+ * Check if current position is place in a
+ * a full 40 bit word.
+ */
+void check_40bit(Position p, const char* buffer, int line, FILE* output) {
+    if (p.state == right) {
+        report_error(output, strcat(buffer, 
+                     " is declared in non-aligned word!"), 
+                     line, 1);
+    }
+}
+
+/**
+ * Turn a ld number into a hex string
+ *
+ * buffer:          hex string to be returned
+ * max:             max size of string
+ */
+void hex_string(ld number, char* buffer, int max) {
+    int s = 0;
+
+    // turn value into hex string
+    sprintf(buffer, "%.10lX", number);
+
+    s = strlen(buffer);
+
+    // if exceeds 10 digits, get the least significant
+    if (s > max) {
+        memcpy(buffer, buffer + s - max, max + 1);
+    }
+}
+
+/**
+ * Fill a word with a given string in current position
+ * and proceed to next available memory.
+ */
+void fill_word(MemMap* map, Position* cur_pos, char* hex, FILE* output) {
+    // set memory as used
+    map[(*cur_pos).address].used = true;
+
+    // apply first bigger digits
+    memcpy(map[(*cur_pos).address].content[(*cur_pos).state], 
+           hex, 5);
+
+    update_position(cur_pos, GO_NEXT, output);
+
+    // remaining digits
+    memcpy(map[(*cur_pos).address].content[(*cur_pos).state], 
+           hex + 5, 5);
+
+    update_position(cur_pos, GO_NEXT, output);
+}
+
+/**
+ * Copy word content into buffer.
+ */
+void copy_word(MemMap* map, int target_pos, char* buffer) {
+    int target_state = left;
+
+    /* Copy first 20 bits */
+    strcpy(buffer, map[target_pos].content[target_state]);
+
+    target_state++;
+
+    /* Copy remaining bits */
+    strcpy(buffer, map[target_pos].content[target_state]);
+}
+
+/**
+ * Custom implementation of strlwr, 
+ * which turns a string into lowercase only.
+ */
+void strlwr(char *str) {
+    int i, len = strlen(str);
+
+    for (int i = 0; i < len; i++) {
+        str[i] = tolower((unsigned char)str[i]);
+    }
+
+    return str;
 }

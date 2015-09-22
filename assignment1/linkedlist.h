@@ -18,7 +18,7 @@ typedef struct Node {
 /* Default functions */
 char* pop (Node** node);
 void push (Node** node, char* item);
-bool empty (Node* node);
+int empty (Node* node);
 void clean_list (Node** node);
 
 #endif

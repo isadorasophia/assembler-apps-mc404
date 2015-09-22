@@ -41,23 +41,32 @@ int main (int argc, char *argv[]) {
     File        file;
 
     MemMap      map[MAX_WORDS];         // final memory map
+
     Position    cur_pos;                // keep in track of current position
+    Position    tmp_pos;
+
     Model       cur_model;              // helps to identify the line model
 
     Node*       cur_labels   = NULL;    // labels to be set
 
     void*       t_labels     = NULL;    // total labels so far
-    void*       t_sym        = NULL;    // total sym so far
+    void*       t_sym        = NULL;    // total sym so fa
 
     void*       instructions = NULL;    // dictionary of instructions
 
-    int         value,
-                cur_line = 0,
-                tmp_int;
+    ld          value        = 0;
+    ld          tmp_ld       = 0;
+
+    int         cur_line     = 0;
+    int         tmp_int      = 0;
 
     char        tmp_str[65];            // helper variable for strings
 
-    /**
+    regex_t     label_regex, sym_regex,
+                instr_regex, directive_regex,
+                hex_regex, decimal_regex;
+
+    /*
      * Initialize data!
      */
     /* Set file ready according to the arguments received */
@@ -89,215 +98,142 @@ int main (int argc, char *argv[]) {
     cur_pos.address = 0;
     cur_pos.state = left;
 
+    cur_line = 1;
+
     /**
      * First step:
      *  1) Attribute all labels and sym
      *  2) Check if commands are correctly placed in-line
      *  3) Check if memory allocation is aligned
+     *  4) Deal with most error occurrences related to arguments
      */
     while (read_file(&file)) {
         /* Set line */
         if (cur_line != file.line) {
-            // new line, set the expected input
+            // new line, set expected input
             cur_model = LABEL;
         }
 
-        /* Label */
         if (match(&label_regex, file.buffer)) {
-            // check if the label was placed correctly
+            // is it placed correctly?
             if (cur_model == LABEL) {
                 cur_model = INSTR_OR_DIR;
 
                 // get rid of the constraints
-                clean_constraints(file.buffer, false);
+                clean_constraints(file.buffer, true);
 
                 // add to the pile
                 push(&cur_labels, file.buffer);
-            } 
-
-            // if the label was placed incorrectly
-            else {
+            } else {
+                // if the label is placed incorrectly
                 report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
             }
-        }
-
-        /* Instruction */
-        else if (match(&instr_regex, file.buffer)) {
-            // check if the instruction was placed correctly
+        } else if (match(&instr_regex, file.buffer)) {
+            // is it placed correctly?
             if (cur_model != END) {
                 cur_model = END;
 
-                /* occupies memory! 
+                /* 1st argument! */
+                read_argument(&file, cur_line);
+
+                /* Occupies memory! 
                  * 2nd step will take care of it, just set all pending
                  * labels to current position of memory */
-                set_labels(&cur_labels, &cur_labels, 
-                        cur_pos.address, file.line);
+                set_labels(&cur_labels, &t_labels, 
+                        cur_pos, file.line, file.out);
 
                 // proceed to next available position
-                update_position(&cur_pos, GO_NEXT);
-            }
-
-            // if the instruction was placed incorrectly
-            else {
+                update_position(&cur_pos, GO_NEXT, file.out);
+            } else {
+                // if the instruction is declared incorrectly
                 report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
             }
-        }
-
-        /* Directive */
-        else if (match(&directive_regex, file.buffer)) {
+        } else if (match(&directive_regex, file.buffer)) {
             // check if the instruction was placed correctly
             if (cur_model != END) {
                 cur_model = END;
 
                 /* Check which directive was called and deal with it 
                  * accordingly */
-                // .set
-                if (strcmp(file.buffer, ".set" == 0) {
-
+                if (!strcmp(file.buffer, ".set")) {
                     /* 1st argument! */
-                    if (read_file(&file) && cur_line == file.line) {
-                        // is it a valid sym?
-                        if (match(&sym_regex, file.buffer)) {
-                            // ok, save it!
-                            strcpy (tmp_str, file.buffer);
+                    read_argument(&file, cur_line);
 
-                            /* 2nd argument! */
-                            if (read_file(&file) && cur_line == file.line) {
-                                // read value
-                                tmp_int = read_constant(file.buffer, 
-                                        file.line);
-
-                                /* assuming everything worked fine, 
-                                 * insert in map */
-                                insert_str(tmp_str, tmp_int, &t_sym);
-                            }
-
-                            // if the 2nd argument was declared incorrectly
-                            else {
-                                report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
-                            }
-
-                        }
-
-                        // invalid sym
-                        else {
-                            report_error(file.out, strcat(file.buffer, " is not a valid SYM!"), file.line, 1);
-                        }
-                    }
-
-                    // if the 1st argument was declared incorrectly
-                    else {
-                        report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
-                    }
-
-                }
-
-                // .org
-                else if (strcmp(file.buffer, ".org" == 0)) {
-
+                   /* 2nd argument! */
+                    read_argument(&file, cur_line);
+                } else if (!strcmp(file.buffer, ".org")) {
                     /* 1st argument! */
-                    if (read_file(&file) && cur_line == file.line) {
-                        // read value
-                        tmp_int = read_constant(file.buffer, file.line);
+                    read_argument(&file, cur_line);
 
-                        /* assuming everything worked fine, 
-                         * go to position */
-                        update_position(&position, tmp_int);
-                    }
+                    // read value
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
 
-                    // if the 1st argument was declared incorrectly
-                    else {
-                        report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
-                    }
-
-                } 
-
-                // .align
-                else if (strcmp(file.buffer, ".align" == 0)) {
-
+                    /* assuming everything worked fine, 
+                     * go to position */
+                    update_position(&cur_pos, (int)tmp_ld, file.out);
+                } else if (!strcmp(file.buffer, ".align")) {
                     /* 1st argument! */
-                    if (read_file(&file) && cur_line == file.line) {
-                        // read value
-                        tmp_int = read_constant(file.buffer, file.line);
+                    read_argument(&file, cur_line);
 
-                        // set min memory it can occupy as aligned
-                        if (cur_pos.state == right) {
-                            cur_pos.address++;
-                        }
+                    // read value
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
 
-                        // find min multiple above current address
-                        tmp_int = min_mul(tmp_int, cur_pos.address);
-
-                        // proceed to position
-                        update_position(&cur_pos, tmp_int);
-                    }
-
-                    // if the 1st argument was declared incorrectly
-                    else {
-                        report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
-                    }
-
-                } 
-
-                // .wfill
-                else if (strcmp(file.buffer, ".wfill" == 0)) {
-
-                    /* 1st argument! */
-                    if (read_file(&file) && cur_line == file.line) {
-                        // read value
-                        tmp_int = read_constant(file.buffer, file.line);
-
-                        /* 2nd argument! */
-                        if (read_file(&file) && cur_line == file.line) {
-                            /* occupies memory!
-                             * 2nd step will take care of it, just set all 
-                             * pending labels to current position of memory */
-                            set_labels(&cur_labels, &cur_labels, 
-                                    cur_pos.address, file.line);
-
-                            // proceed to next available position after fill
-                            update_position(&cur_pos, cur_pos.address + tmp_int);
-                        }
-
-                        // if the 2nd argument was declared incorrectly
-                        else {
-                            report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
-                        }
-
-                    }
-
-                    // if the 1st argument was declared incorrectly
-                    else {
-                        report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
-                    }
-
-                }
-
-                // .word
-                else if (strcmp(file.buffer, ".word" == 0)) {
-                    // does it occupy only a 20-bit command?
+                    // set min memory it can occupy as aligned
                     if (cur_pos.state == right) {
-                        report_error(file.out, strcat(file.buffer, " is declared in non-aligned word!"), file.line, 1);
+                        cur_pos.address++;
                     }
+
+                    // find min multiple above current address
+                    tmp_ld = min_mul((int)tmp_ld, cur_pos.address);
+
+                    // proceed to position
+                    update_position(&cur_pos, (int)tmp_ld, file.out);
+                } else if (!strcmp(file.buffer, ".wfill")) {
+                    // does it occupy only a 20-bit command?
+                    check_40bit(cur_pos, file.buffer, file.line, file.out);
+
+                    /* 1st argument! */
+                    read_argument(&file, cur_line);
+
+                    // read value
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
+
+                    /* 2nd argument! */
+                    read_argument(&file, cur_line);
+
+                    /* occupies memory!
+                     * 2nd step will take care of it, just set all 
+                     * pending labels to current position of memory */
+                    set_labels(&cur_labels, &t_labels, 
+                        cur_pos, file.line, file.out);
+
+                    // proceed to next available position after fill
+                    update_position(&cur_pos, cur_pos.address + (int)tmp_ld, 
+                                    file.out);
+                } else if (!strcmp(file.buffer, ".word")) {
+                    // does it occupy only a 20-bit command?
+                    check_40bit(cur_pos, file.buffer, file.line, file.out);
+
+                    /* 1st argument! */
+                    read_argument(&file, cur_line);
 
                     /* occupies memory!
                      * 2nd step will take care of it, just set all pending
                      * labels to current position of memory */
-                    set_labels(&cur_labels, &cur_labels, 
-                            cur_pos.address, file.line);
+                    set_labels(&cur_labels, &t_labels, 
+                        cur_pos, file.line, file.out);
 
                     // proceed to next available position after 40-bit fill
-                    update_position(&cur_pos, cur_pos.address + 2);
-                }
-
-                // if a valid directive was not found
-                else {
+                    update_position(&cur_pos, cur_pos.address + 2, file.out);
+                } else {
+                    // if a valid directive was not found
                     report_error(file.out, strcat(file.buffer, " is not a valid directive!"), file.line, 1);
                 }
-            }
-
-            // if the directive was placed incorrectly 
-            else {
+            } else {
+                // if the directive was placed incorrectly 
                 report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
             }
         }
@@ -307,6 +243,9 @@ int main (int argc, char *argv[]) {
             report_error(file.out, strcat(file.buffer, " is not a valid element!"), file.line, 1);
         }
     }
+
+    /* Finish labels */
+    set_labels(&cur_labels, &t_labels, cur_pos, file.line, file.out);
 
     /* 1st step is finished, restart structures! */
     refresh_file(&file);
@@ -319,78 +258,192 @@ int main (int argc, char *argv[]) {
      *  1) Actually set the final file
      */
     while (read_file(&file)) {
-        /* Label */
         if (match(&label_regex, file.buffer)) {
             // was already dealt in 1st step!
-            continue
-        }
 
-        /* Instruction */
-        else if (match(&instr_regex, file.buffer)) {
-            // is it a valid instruction?
-            if (find_label(file.buffer, &instructions, &value)) {
+        } else if (match(&instr_regex, file.buffer)) {
+            // is it a valid mnemonic?
+            if (find_str(file.buffer, &instructions, &value, true)) {
                 // ok, save it!
-                tmp_int = value;
+                tmp_int = (int)value;
 
                 /* Get the argument! */
-                if (read_file(&file) && cur_line == file.line) {
-                    // get rid of the constraints
-                    clean_constraints(file.buffer, 0);
+                read_argument(&file, cur_line);
 
+                // get rid of the constraints
+                clean_constraints(file.buffer, 0);
+
+                if (match(&sym_regex, file.buffer)) {
                     /* Sym or label reference */
-                    if (match(&sym_regex, file.buffer)) {
-                        if (find_label(file.buffer, &t_syms, &value) || find_label(file.buffer, &t_labels, &value)) {
+                    if (find_str(file.buffer, &t_sym, &value, false)) {
+                        tmp_ld = value;
+                    } else if (find_label(file.buffer, &t_labels, 
+                               &tmp_pos, false)) {
+                        tmp_ld = tmp_pos.address;
 
-                            tmp_int = value;
+                        // if the instruction relies on the word state
+                        if (tmp_int == _JMP || tmp_int == _JUMP_PLUS ||
+                            tmp_int == _STaddr) {
+                            if (tmp_pos.state == right) {
+                                tmp_int++;
+                            }
                         }
-
-                        // this is an inexistent sym/label!
-                        else {
-                            report_error(file.out, strcat(file.buffer, " is not a valid argument!"), file.line, 1);
-                        }
+                    } else {
+                        report_error(file.out, strcat(file.buffer, " doesn't exist!"), file.line, 1);
                     }
-
+                } else {
                     /* Hex or decimal reference */
-                    else {
-                        tmp_int = read_constant(file.buffer, file.line);
-                    }
-
-                    // saves the instruction
-                    sprintf(map[cur_pos.address].content[cur_pos.state], "%02X %03X", tmp_int, tmp_int);
-
-                    // proceed to next available position
-                    update_position(&cur_pos, GO_NEXT);
-                } 
-
-                // if the argument was declared in a new line 
-                else {
-                    report_error(file.out, strcat(file.buffer, " is placed incorrectly!"), file.line, 1);
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
                 }
 
+                // saves the instruction
+                sprintf(map[cur_pos.address].content[cur_pos.state], 
+                    "%.2X %.3X", tmp_int, (int)tmp_ld);
+
+                // set as used
+                map[cur_pos.address].used = true;
+
+                // proceed to next available position
+                update_position(&cur_pos, GO_NEXT, file.out);
             }
 
             // if a valid mnemonic was not found 
             else {
                 report_error(file.out, strcat(file.buffer, " is not a valid mnemonic!"), file.line, 1);
             }
-        }
+        } else if (match(&directive_regex, file.buffer)) {
+            /* Check which directive was called and deal with it 
+             * accordingly */
+            if (!strcmp(file.buffer, ".set")) {
+                /* 1st argument! */
+                read_argument(&file, cur_line);
 
-        /* Directive */
-        else if (match(&directive_regex, file.buffer)) {
-            if (find_label(file.buffer, &instructions, &value)) {
-                // deal
+                // is it a valid sym?
+                if (match(&sym_regex, file.buffer)) {
+                    // ok, save it!
+                    strcpy(tmp_str, file.buffer);
+
+                    /* 2nd argument! */
+                    read_argument(&file, cur_line);
+
+                    // read value
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
+
+                    /* assuming everything worked fine, 
+                     * insert in map */
+                    insert_str(tmp_str, tmp_ld, &t_sym, false);
+                } else {
+                    // invalid sym
+                    report_error(file.out, strcat(file.buffer, " is not a valid SYM!"), file.line, 1);
+                }
+            } else if (!strcmp(file.buffer, ".org")) {
+                /* 1st argument! */
+                read_argument(&file, cur_line);
+
+                // read value
+                tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                       &decimal_regex, &hex_regex);
+
+                /* assuming everything worked fine, 
+                 * go to position */
+                update_position(&cur_pos, (int)tmp_ld, file.out);
+            } else if (!strcmp(file.buffer, ".align")) {
+                /* 1st argument! */
+                read_argument(&file, cur_line);
+
+                // read value
+                tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
+
+                // set min memory it can occupy as aligned
+                if (cur_pos.state == right) {
+                    cur_pos.address++;
+                }
+
+                // find min multiple above current address
+                tmp_ld = min_mul((int)tmp_ld, cur_pos.address);
+
+                // proceed to position
+                update_position(&cur_pos, (int)tmp_ld, file.out);
+            } else if (!strcmp(file.buffer, ".wfill")) {
+                /* 1st argument! */
+                read_argument(&file, cur_line);
+
+                // read no. of words to be allocated
+                tmp_int = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
+
+                /* 2nd argument! */
+                read_argument(&file, cur_line);
+
+                // get rid of the constraints
+                clean_constraints(file.buffer, true);
+
+                // value to fill them
+                if (match(&sym_regex, file.buffer)) {
+                    /* Sym or label */
+                    if (find_str(file.buffer, &t_sym, &value, false)) {
+                        hex_string(value, tmp_str, WORD_SIZE);
+                    } else if (find_label(file.buffer, &t_labels, 
+                               &tmp_pos, false)) {
+                        // simply copy the word into another
+                        copy_word(map, tmp_pos.address, tmp_str);
+                    } else {
+                        report_error(file.out, strcat(file.buffer, " doesn't exist!"), file.line, 1);
+                    }
+                } else {
+                    /* Hex or decimal reference */
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
+
+                    hex_string(tmp_ld, tmp_str, WORD_SIZE);
+                }
+
+                // fill the words (amount is located in tmp_int)
+                for (int i = 0; i < tmp_int; i++) {
+                    fill_word(map, &cur_pos, tmp_str, file.out);
+                }
+            } else if (!strcmp(file.buffer, ".word")) {
+                read_argument(&file, cur_line);
+
+                // get rid of the constraints
+                clean_constraints(file.buffer, true);
+
+                if (match(&sym_regex, file.buffer)) {
+                    /* Sym or label */
+                    if (find_str(file.buffer, &t_sym, &value, false)) {
+                        hex_string(value, tmp_str, WORD_SIZE);
+                    } else if (find_label(file.buffer, &t_labels, 
+                               &tmp_pos, false)) {
+                        // simply copy the word into another
+                        copy_word(map, tmp_pos.address, tmp_str);
+                    } else {
+                        report_error(file.out, strcat(file.buffer, " doesn't exist!"), file.line, 1);
+                    }
+                } else {
+                    /* Hex or decimal reference */
+                    tmp_ld = read_constant(file.buffer, file.line, file.out,
+                                           &decimal_regex, &hex_regex);
+
+                    hex_string(tmp_ld, tmp_str, WORD_SIZE);
+                }
+
+                // fill the cur_pos with word
+                fill_word(map, &cur_pos, tmp_str, file.out);
             } else {
-                // if a valid mnemonic was not found, report an error
+                // if a valid directive was not found
                 report_error(file.out, strcat(file.buffer, " is not a valid directive!"), file.line, 1);
             }
-        }
-
-        /* None of the patterns matched! 
-         * (should already have been taken care of, but just in case) */
-        else {
+        } else {
+            /* None of the patterns matched! */
             report_error(file.out, strcat(file.buffer, " is not a valid element!"), file.line, 1);
         }
     }
+
+    /* Finally, write everything on the output! */
+    write_map(map, file.out);
 
     /**
      * Clean up the mess...

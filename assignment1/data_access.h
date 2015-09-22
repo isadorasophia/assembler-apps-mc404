@@ -15,9 +15,6 @@
 #define FILE_ERROR -1
 #endif
 
-/* Maximum size of useless string */
-#define GARBAGE_SIZE 512
-
 /* Safe buffer size */
 #define BUFFER_SIZE 1024
 
@@ -33,9 +30,16 @@ typedef struct File {
 } File;
 
 /* File access */
-void initialize_file (File* f, const char* input, const char* output);
-bool read_file (File* f);
-void refresh_file (File *f);
-void clean_file (File *f);
+void initialize_file (File*, const char*, const char*);
+bool read_file (File*);
+void write_map(MemMap*, FILE*);
+void refresh_file (File*);
+void clean_file (File*);
+
+/* File handling */
+void skip_line (File*);
+void read_argument (File*, int);
+ld read_constant(char* buffer, int line, FILE* output,
+                 regex_t*, regex_t*);
 
 #endif
