@@ -44,7 +44,7 @@ void push (Node** node, char* item) {
     new_node->label = strdup(item);
     new_node->next = (*node);
 
-    *node = new_node;
+    (*node) = new_node;
 }
 
 /**
