@@ -13,12 +13,15 @@
 
 #include "linkedlist.h"
 
+/* ---------------------------------------------------------------------
+ * Definitions
+ * --------------------------------------------------------------------- */
 /* Regex definition */
 #define LABEL_REGEX "^[_a-zA-Z][a-zA-Z0-9_]{0,63}:$"    // .label:
 #define SYM_REGEX "^[_a-zA-Z][a-zA-Z0-9_]{0,63}$"       // SYM
 #define INSTR_REGEX "^[A-Z][A-Za-z]+"                   // INSTRUCTION
-#define DIRECTIVE_REGEX "^\\.[a-z]+$"                    // .directive
-#define HEX_REGEX "^0x[a-fA-F0-9]{10}$"                 // 0x000...
+#define DIRECTIVE_REGEX "^\\.[a-z]+$"                   // .directive
+#define HEX_REGEX "^0x[a-fA-F0-9]{0,10}$"               // 0x000...
 #define DEC_REGEX "^-?[0-9]{0,4}$"                      // 1
 
 /* Instructions definition */
@@ -35,46 +38,38 @@
 #define _SUB 6
 #define _SUB_MODULUS 8
 #define _MUL 11
-#define _DIF 12
+#define _DIV 12
 #define _LSH 20
 #define _RSH 21
 #define _STaddr 18
 
 /* Max size of the memory map */
 #define MAX_WORDS 1024
-
-/**
- * Attempt to create boolean values
- */
-typedef int bool;
-#define true    1
-#define false   0
-
-/**
- * Left and right values
- */
-#define left    0
-#define right   1
-
-/**
- * Flag used to handle the position function
- */
-#define GO_NEXT -1
-
-/**
- * Word size in hex
- */
+/* No. of digits of a word (in hex) */
 #define WORD_SIZE 10
 /* Spaces in a default word output */
 #define SPACES 3
 
-/**
- * Handler
- */
+/* Attempt to create boolean values */
+typedef int bool;
+#define true    1
+#define false   0
+
+/* Left and right values */
+#define left    0
+#define right   1
+
+/* Flag used to handle the position function */
+#define GO_NEXT -1
+
+/* Flags handler */
 #define SKIP -1
 
 #define ld long int
 
+/* ---------------------------------------------------------------------
+ * General structures
+ * --------------------------------------------------------------------- */
 /* Default model of each text line */
 typedef enum Model { LABEL, INSTR_OR_DIR, END } Model;
 
@@ -100,9 +95,6 @@ typedef struct MemMap {
     bool        used;
 } MemMap;
 
-/* Initialize memory map */
-void initialize_mem(MemMap*);
-
 /**
  * Data estructure to simulates a std::map regarding label
  *
@@ -113,15 +105,6 @@ typedef struct Label {
     char*       key;
     Position    value;
 } Label;
-
-/* Helper function used to search for a Label key */
-int compar_label(const void*, const void*);
-
-/* Insert a value */
-bool insert_label(const char*, const Position, void**, bool);
-
-/* Find a given value in the binary search tree of type Label */
-bool find_label (const char*, void**, Position*, bool);
 
 /**
  * General data estructure to simulates a std::map<String>
@@ -134,6 +117,30 @@ typedef struct String_map {
     ld          value;
 } String_map;
 
+/* ---------------------------------------------------------------------
+ * Initialization functions
+ * --------------------------------------------------------------------- */
+/* Initialize memory map */
+void initialize_mem(MemMap*);
+
+/* Fill dictionary of instructions */
+void initialize_instr(void**);
+
+/* ---------------------------------------------------------------------
+ * Label dictionary implementation
+ * --------------------------------------------------------------------- */
+/* Helper function used to search for a Label key */
+int compar_label(const void*, const void*);
+
+/* Insert a value */
+bool insert_label(const char*, const Position, void**, bool);
+
+/* Find a given value in the binary search tree of type Label */
+bool find_label(const char*, void**, Position*, bool);
+
+/* ---------------------------------------------------------------------
+ * String dictionary implementation
+ * --------------------------------------------------------------------- */
 /* Helper function used to search for a String_map key */
 int compar_str(const void*, const void*);
 
@@ -141,35 +148,29 @@ int compar_str(const void*, const void*);
 bool insert_str(const char*, ld, void**, bool);
 
 /* Find a given value in the binary search tree of type String_map */
-bool find_str (const char*, void**, ld*, bool);
+bool find_str(const char*, void**, ld*, bool);
 
-
-/* Fill dictionary of instructions */
-void initialize_instr(void**);
-
+/* ---------------------------------------------------------------------
+ * Data synchronization
+ * --------------------------------------------------------------------- */
 /* Set all the labels from a list to a corresponding memory */
 void set_labels(Node**, void**, Position, int, FILE*);
-
-/* In order to make regex validation easier */
-bool match(regex_t*, const char*);
-bool clean_constraints(char*, bool);
 
 /* Updates the position to goal or simply to the next one */
 void update_position(Position*, const int, FILE*);
 
-/**
- * Helper task functions
- */
-/* Find minimum multiple of n above value of min */
-int min_mul(int, int);
+/* ---------------------------------------------------------------------
+ * Regex validation
+ * --------------------------------------------------------------------- */
+bool match(regex_t*, const char*);
+bool clean_constraints(char*, bool);
 
-/* Check if current position is placed in a
- * a full 40 bit word */
-void check_40bit(Position, const char*, int, FILE*);
+/* ---------------------------------------------------------------------
+ * Functions related to the memory map
+ * --------------------------------------------------------------------- */
+/* Align a word in memory */
+void align(int, Position*, FILE*);
 
-/**
- * Memory map functions
- */
 /* Turn a ld number into a hex string */
 void hex_string(ld, char*, int);
 
@@ -181,7 +182,20 @@ void format_hex(char* hex);
 void fill_word(MemMap*, Position*, char*, FILE*);
 
 /* Copy word content into buffer */
-void copy_word(MemMap*, int, char*);
+void copy_word(MemMap*, Position, char*);
+
+/* ---------------------------------------------------------------------
+ * Helper task functions
+ * --------------------------------------------------------------------- */
+/* Check if current position is placed in a
+ * a full 40 bit word */
+void check_40bit(Position, const char*, int, FILE*);
+
+/* Check if a given instruction receives an argument */
+bool check_arg(char*);
+
+/* Find minimum multiple of n above value of min */
+int min_mul(int, int);
 
 /* Custom implementation of strlwr, 
  * which turns a string into lowercase only */

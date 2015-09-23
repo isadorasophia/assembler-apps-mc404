@@ -5,10 +5,53 @@
  * program.
  *
  * ********************************************************************* */
-#include "data_structure.h"
-
+#include <string.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "data_structure.h"
+
+/* ---------------------------------------------------------------------
+ * Initialization functions
+ * --------------------------------------------------------------------- */
+/**
+ * Initialize memory map
+ */
+void initialize_mem(MemMap* memMap) {
+    for (int i = 0; i < MAX_WORDS; i++) {
+        memMap[i].used = false;
+
+        strcpy(memMap[i].content[left], "00 000");
+        strcpy(memMap[i].content[right], "00 000");
+    }
+}
+
+/**
+ * Fill dictionary of instructions
+ */
+void initialize_instr(void** root) {
+    insert_str("LD", _LD, root, true);
+    insert_str("LD-", _LD_MINUS, root, true);
+    insert_str("LD|", _LD_MODULUS, root, true);
+    insert_str("LDmq", _LDmq, root, true);
+    insert_str("LDmq_mx", _LDmq_mx, root, true);
+    insert_str("ST", _ST, root, true);
+    insert_str("JMP", _JMP, root, true);
+    insert_str("JUMP+", _JUMP_PLUS, root, true);
+    insert_str("ADD", _ADD, root, true);
+    insert_str("ADD|", _ADD_MODULUS, root, true);
+    insert_str("SUB", _SUB, root, true);
+    insert_str("SUB|", _SUB_MODULUS, root, true);
+    insert_str("MUL", _MUL, root, true);
+    insert_str("DIV", _DIV, root, true);
+    insert_str("LSH", _LSH, root, true);
+    insert_str("RSH", _RSH, root, true);
+    insert_str("STaddr", _STaddr, root, true);
+}
+
+/* ---------------------------------------------------------------------
+ * Label dictionary implementation
+ * --------------------------------------------------------------------- */
 /** 
  * Functions below are used for binary search tree implementation
  */
@@ -88,6 +131,9 @@ bool find_label(const char* key, void** root, Position* result,
     }
 }
 
+/* ---------------------------------------------------------------------
+ * String dictionary implementation
+ * --------------------------------------------------------------------- */
 /* Helper function used to search for a String_map key */
 int compar_str(const void *l, const void *r) {
     const String_map* lm = l;
@@ -102,7 +148,8 @@ int compar_str(const void *l, const void *r) {
  * sensitive:       if it should be case sensitive
  * return:          if succeeded (there are no duplicates)
  */
-bool insert_str(const char* key, ld value, void** root, bool sensitive) {
+bool insert_str(const char* key, ld value, void** root, 
+                bool sensitive) {
     String_map* t = malloc(sizeof(String_map));
 
     // copy string for further handling
@@ -135,7 +182,8 @@ bool insert_str(const char* key, ld value, void** root, bool sensitive) {
  * result:          inserts the respective found value
  * return:          if could find the value
  */
-bool find_str(const char* key, void** root, ld* result, bool sensitive) {
+bool find_str(const char* key, void** root, ld* result, 
+              bool sensitive) {
     String_map* t = malloc(sizeof(String_map));
 
     // copy string for further handling
@@ -161,41 +209,9 @@ bool find_str(const char* key, void** root, ld* result, bool sensitive) {
     }
 }
 
-/**
- * Initialize memory map
- */
-void initialize_mem(MemMap* memMap) {
-    for (int i = 0; i < MAX_WORDS; i++) {
-        memMap[i].used = false;
-
-        strcpy(memMap[i].content[left], "00 000");
-        strcpy(memMap[i].content[right], "00 000");
-    }
-}
-
-/**
- * Fill dictionary of instructions
- */
-void initialize_instr(void** root) {
-    insert_str("LD", _LD, root, true);
-    insert_str("LD-", _LD_MINUS, root, true);
-    insert_str("LD|", _LD_MODULUS, root, true);
-    insert_str("LDmq", _LDmq, root, true);
-    insert_str("LDmq_mx", _LDmq_mx, root, true);
-    insert_str("ST", _ST, root, true);
-    insert_str("JMP", _JMP, root, true);
-    insert_str("JUMP+", _JUMP_PLUS, root, true);
-    insert_str("ADD", _ADD, root, true);
-    insert_str("ADD|", _ADD_MODULUS, root, true);
-    insert_str("SUB", _SUB, root, true);
-    insert_str("SUB|", _SUB_MODULUS, root, true);
-    insert_str("MUL", _MUL, root, true);
-    insert_str("DIF", _DIF, root, true);
-    insert_str("LSH", _LSH, root, true);
-    insert_str("RSH", _RSH, root, true);
-    insert_str("STaddr", _STaddr, root, true);
-}
-
+/* ---------------------------------------------------------------------
+ * Data synchronization
+ * --------------------------------------------------------------------- */
 /**
  * Set all the labels from a list to a corresponding memory
  */
@@ -207,56 +223,12 @@ void set_labels(Node** l, void** labels, Position mem, int line,
         tmp = pop(l);
 
         // check if something went wrong
-        if (!insert_label(tmp, mem, labels, false)) {
+        if (!insert_label(tmp, mem, labels, true)) {
             report_error(output, strcat((*l)->label, 
                     " was already declared!"), -1, 1);
         }
 
         free(tmp);
-    }
-}
-
-/** 
- * Helper function in order to make regex validation easier
- *
- * return:          if the given string matches the regular expression
- */
-bool match(regex_t* re, const char* word) {
-    // function param
-    regmatch_t t[1];
-
-    // finally, check if it matches...
-    if (regexec(re, word, 1, t, 0) == 0) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/**
- * If a given string is enclosed in quotation marks, take them off.
- * ...Or just take off whatever is enclosing the string
- *
- * check:           if wants to check before remove, or remove anyway
- * return:          if there were quotation marks
- */
-bool clean_constraints(char* w, bool check) {
-    int size = strlen(w);
-
-    if (!check || w[0] == '"' && w[size - 1] == '"') {
-        memmove (w, w + 1, size - 2);
-
-        w[size - 2] = '\0';
-
-        return true;
-    } else if (w[size - 1] == ":") {
-        memmove(w, w, size - 1);
-
-        w[size - 1] = '\0';
-
-        return true;
-    } else {
-        return false;
     }
 }
 
@@ -298,32 +270,72 @@ void update_position(Position* p, const int to, FILE* output) {
     }
 }
 
-/**
- * Find minimum multiple of n above value of min
+/* ---------------------------------------------------------------------
+ * Regex validation
+ * --------------------------------------------------------------------- */
+/** 
+ * Helper function in order to make regex validation easier
  *
- * return:          result
+ * return:          if the given string matches the regular expression
  */
-int min_mul(int n, int mim) {
-    int division = mim / n;
+bool match(regex_t* re, const char* word) {
+    // function param
+    regmatch_t t[1];
 
-    // if the division wasnt an integer, pick up the min above
-    if (division != 0) {
-        division += n;
+    // finally, check if it matches...
+    if (regexec(re, word, 1, t, 0) == 0) {
+        return true;
+    } else {
+        return false;
     }
-
-    return division;
 }
 
 /**
- * Check if current position is place in a
- * a full 40 bit word.
+ * If a given string is enclosed in quotation marks, take them off.
+ * ...Or just take off whatever is enclosing the string
+ *
+ * check:           if wants to check before remove, or remove anyway
+ * return:          if there were quotation marks
  */
-void check_40bit(Position p, const char* buffer, int line, FILE* output) {
-    if (p.state == right) {
-        report_error(output, strcat(buffer, 
-                     " is declared in non-aligned word!"), 
-                     line, 1);
+bool clean_constraints(char* w, bool check) {
+    int size = strlen(w);
+
+    if (!check || w[0] == '"' && w[size - 1] == '"') {
+        memmove (w, w + 1, size - 2);
+
+        w[size - 2] = '\0';
+
+        return true;
+    } else if (w[size - 1] == ':') {
+        memmove(w, w, size - 1);
+
+        w[size - 1] = '\0';
+
+        return true;
+    } else {
+        return false;
     }
+}
+
+/* ---------------------------------------------------------------------
+ * Functions related to the memory map
+ * --------------------------------------------------------------------- */
+/**
+ * Align a word in memory
+ */
+void align(int factor, Position* cur_pos, FILE* output) {
+    int target_pos;
+
+    // set min memory it can occupy as aligned
+    if ((*cur_pos).state == right) {
+        (*cur_pos).address++;
+    }
+
+    // find min multiple above current address
+    target_pos = min_mul(factor, (*cur_pos).address);
+
+    // proceed to position
+    update_position(cur_pos, target_pos, output);
 }
 
 /**
@@ -402,16 +414,56 @@ void fill_word(MemMap* map, Position* cur_pos, char* hex, FILE* output) {
 /**
  * Copy word content into buffer.
  */
-void copy_word(MemMap* map, int target_pos, char* buffer) {
-    int target_state = left;
+void copy_word(MemMap* map, Position target_pos, char* buffer) {
+    int s;
+
+    // make sure it starts at left
+    target_pos.state = left;
 
     /* Copy first 20 bits */
-    strcpy(buffer, map[target_pos].content[target_state]);
+    strcpy(buffer, map[target_pos.address].content[target_pos.state]);
+    strcat(buffer, " ");
 
-    target_state++;
+    target_pos.state++;
 
     /* Copy remaining bits */
-    strcpy(buffer, map[target_pos].content[target_state]);
+    strcat(buffer, map[target_pos.address].content[target_pos.state]);
+}
+
+/* ---------------------------------------------------------------------
+ * Helper task functions
+ * --------------------------------------------------------------------- */
+/**
+ * Check if current position is place in a
+ * a full 40 bit word.
+ */
+void check_40bit(Position p, const char* buffer, int line, FILE* output) {
+    if (p.state == right) {
+        report_error(output, strcat(buffer, 
+                     " is declared in non-aligned word!"), 
+                     line, 1);
+    }
+}
+
+/**
+ * Check if a given instruction receives any argument
+ */
+bool check_arg(char* buffer) {
+    // basically, check if it isa n argumentless instruction
+    if (strcmp(buffer, "LSH") && strcmp(buffer, "RSH")) {
+        return true;
+    } else {
+        return false;
+    }
+}
+ 
+/**
+ * Find minimum multiple of n above value of min
+ *
+ * return:          result
+ */
+int min_mul(int n, int mim) {
+    return mim + mim % n;
 }
 
 /**

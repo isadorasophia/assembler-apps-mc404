@@ -6,15 +6,17 @@
  *
  * ********************************************************************* */
 
+#include <string.h>
+#include <stdlib.h>
+
 #include "data_structure.h"
 #include "data_access.h"
-
 #include "error.h"
 
 /**
  * Initialize file data structure
  */
-void initialize_file (File* f, const char* input, const char* output) {
+void initialize_file(File* f, char* input, char* output) {
     // if the output string is empty, set default output
     if (strlen(output) <= 0) {
         f->out = stdout;
@@ -42,7 +44,7 @@ void initialize_file (File* f, const char* input, const char* output) {
  * 
  * return:          if it was a successful read
  */
-bool read_file (File* f) {
+bool read_file(File* f) {
     char* p, c;
 
     // first, check file status
@@ -55,15 +57,13 @@ bool read_file (File* f) {
             f->line++;
 
             c = fgetc(f->in);
-        } 
-        // comment line, just skip the entire line
-        else if (c == '#') {
+        } else if (c == '#') {
+            // comment line, just skip the entire line
             skip_line(f);
 
             c = fgetc(f->in);
-        } 
-        // space, find next useful character
-        else if (c == ' ') {
+        } else if (c == ' ') {
+            // space, find next useful character
             c = fgetc(f->in);
         }
     }
@@ -121,6 +121,9 @@ void clean_file(File *f) {
     fclose(f->in);   
 }
 
+/* ---------------------------------------------------------------------
+ * File handling functions
+ * --------------------------------------------------------------------- */
 /**
  * Skip to the newline character of a sentence
  */
