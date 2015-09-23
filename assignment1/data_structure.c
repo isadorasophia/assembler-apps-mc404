@@ -7,9 +7,12 @@
  * ********************************************************************* */
 #include <string.h>
 #include <stdlib.h>
-#include <string.h>
+
+#include <search.h>                 // binary search tree operations
+#include <ctype.h>                  // tolower implementation
 
 #include "data_structure.h"
+#include "error.h"
 
 /* ---------------------------------------------------------------------
  * Initialization functions
@@ -348,7 +351,7 @@ void hex_string(lld number, char* buffer, int max) {
     int s = 0;
 
     // turn value into hex string
-    sprintf(buffer, "%.10lX", number);
+    sprintf(buffer, "%.10llX", number);
 
     s = strlen(buffer);
 
@@ -437,7 +440,7 @@ void copy_word(MemMap* map, Position target_pos, char* buffer) {
  * Check if current position is place in a
  * a full 40 bit word.
  */
-void check_40bit(Position p, const char* buffer, int line) {
+void check_40bit(Position p, char* buffer, int line) {
     if (p.state == right) {
         report_error(strcat(buffer, " is declared in non-aligned word!"), 
                      line, 1);
@@ -488,6 +491,4 @@ void strlwr(char *str) {
     for (int i = 0; i < len; i++) {
         str[i] = tolower((unsigned char)str[i]);
     }
-
-    return str;
 }

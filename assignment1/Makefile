@@ -12,7 +12,7 @@
 OBJ_FILES=main.o error.o data_access.o data_structure.o linkedlist.o
 
 # flags used when compilling
-FLAGS=-c -g -std=c99
+FLAGS=-c -g -std=c99 -D_POSIX_C_SOURCE=200809L
 
 # default rule
 all: ias-as

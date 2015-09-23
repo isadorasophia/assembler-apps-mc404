@@ -4,10 +4,11 @@
  * Description: standard linked list operations.
  *
  * ********************************************************************* */
+#include <string.h>
+#include <stdlib.h>
+
 #include "data_structure.h"
 #include "linkedlist.h"
-
-#include <string.h>
 
 /**
  * Pop a node of the list.

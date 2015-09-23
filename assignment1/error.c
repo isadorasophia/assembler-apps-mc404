@@ -5,6 +5,8 @@
  * the execution.
  *
  * ********************************************************************* */
+#include <stdlib.h>
+
 #include "error.h"
 
 /* Reports an error message. 

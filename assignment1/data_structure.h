@@ -192,7 +192,7 @@ void copy_word(MemMap*, Position, char*);
  * --------------------------------------------------------------------- */
 /* Check if current position is placed in a
  * a full 40 bit word */
-void check_40bit(Position, const char*, int);
+void check_40bit(Position, char*, int);
 
 /* Check if a number has reached its limit value */
 void check_limit(lld, lld, lld, int);
