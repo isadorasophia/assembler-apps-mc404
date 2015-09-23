@@ -174,8 +174,8 @@ int main (int argc, char *argv[]) {
 
                     // read value
                     tmp_lld = read_constant(file.buffer, file.line,
-                                           0, 1023, true,
-                                           &decimal_regex, &hex_regex);
+                                            0, 1023, true,
+                                            &decimal_regex, &hex_regex);
 
                     /* assuming everything worked fine, 
                      * go to position */
@@ -190,8 +190,8 @@ int main (int argc, char *argv[]) {
 
                     // read value
                     tmp_lld = read_constant(file.buffer, file.line,
-                                           1, 1023, false,
-                                           &decimal_regex, &hex_regex);
+                                            1, 1023, false,
+                                            &decimal_regex, &hex_regex);
 
                     align((int)tmp_lld, &cur_pos);
                 } else if (!strcmp(file.buffer, ".wfill")) {
@@ -203,8 +203,8 @@ int main (int argc, char *argv[]) {
 
                     // read value
                     tmp_lld = read_constant(file.buffer, file.line,
-                                           1, 1023, false,
-                                           &decimal_regex, &hex_regex);
+                                            1, 1023, false,
+                                            &decimal_regex, &hex_regex);
 
                     /* 2nd argument! */
                     read_argument(&file, cur_line);
@@ -309,8 +309,8 @@ int main (int argc, char *argv[]) {
                     } else {
                         /* Hex or decimal reference */
                         tmp_lld = read_constant(file.buffer, file.line, 
-                                               0, 1023, true,
-                                               &decimal_regex, &hex_regex);
+                                                0, 1023, true,
+                                                &decimal_regex, &hex_regex);
                     }
                 } else {
                     /* If the instruction doesnt receive any
@@ -351,8 +351,8 @@ int main (int argc, char *argv[]) {
 
                     // read value
                     tmp_lld = read_constant(file.buffer, file.line,
-                                           0, MAX_WORD_VALUE - 1, true,
-                                           &decimal_regex, &hex_regex);
+                                            0, MAX_WORD_VALUE - 1, true,
+                                            &decimal_regex, &hex_regex);
 
                     /* assuming everything worked fine, 
                      * insert in map */
@@ -368,8 +368,8 @@ int main (int argc, char *argv[]) {
 
                 // read value
                 tmp_lld = read_constant(file.buffer, file.line,
-                                       0, 1023, true,
-                                       &decimal_regex, &hex_regex);
+                                        0, 1023, true,
+                                        &decimal_regex, &hex_regex);
 
                 /* assuming everything worked fine, 
                  * go to position */
@@ -380,8 +380,8 @@ int main (int argc, char *argv[]) {
 
                 // read value
                 tmp_lld = read_constant(file.buffer, file.line,
-                                       1, 1023, false,
-                                       &decimal_regex, &hex_regex);
+                                        1, 1023, false,
+                                        &decimal_regex, &hex_regex);
 
                 align((int)tmp_lld, &cur_pos);
             } else if (!strcmp(file.buffer, ".wfill")) {
@@ -414,8 +414,9 @@ int main (int argc, char *argv[]) {
                 } else {
                     /* Hex or decimal reference */
                     tmp_lld = read_constant(file.buffer, file.line,
-                                           -MAX_WORD_VALUE, MAX_WORD_VALUE - 1,
-                                           true, &decimal_regex, &hex_regex);
+                                            -MAX_WORD_VALUE, 
+                                            MAX_WORD_VALUE - 1,
+                                            true, &decimal_regex, &hex_regex);
                 }
 
                 hex_string(tmp_lld, tmp_str, WORD_SIZE);
@@ -444,8 +445,8 @@ int main (int argc, char *argv[]) {
                 } else {
                     /* Hex or decimal reference */
                     tmp_lld = read_constant(file.buffer, file.line,
-                                           0, MAX_WORD_VALUE * 2 - 1, true,
-                                           &decimal_regex, &hex_regex);
+                                            0, MAX_WORD_VALUE * 2 - 1, true,
+                                            &decimal_regex, &hex_regex);
                 }
 
                 hex_string(tmp_lld, tmp_str, WORD_SIZE);

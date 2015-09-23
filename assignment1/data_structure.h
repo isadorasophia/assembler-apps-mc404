@@ -21,7 +21,7 @@
 #define SYM_REGEX "^[_a-zA-Z][a-zA-Z0-9_]{0,63}$"       // SYM
 #define INSTR_REGEX "^[A-Z][A-Za-z]+"                   // INSTRUCTION
 #define DIRECTIVE_REGEX "^\\.[a-z]+$"                   // .directive
-#define HEX_REGEX "^0x[a-fA-F0-9]{0,10}$"               // 0x000...
+#define HEX_REGEX "^0x[a-fA-F0-9]{10}$"                 // 0x000...
 #define DEC_REGEX "^-?[0-9]{0,10}$"                     // 1
 
 /* Instructions definition */
