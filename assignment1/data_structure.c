@@ -148,7 +148,7 @@ int compar_str(const void *l, const void *r) {
  * sensitive:       if it should be case sensitive
  * return:          if succeeded (there are no duplicates)
  */
-bool insert_str(const char* key, ld value, void** root, 
+bool insert_str(const char* key, lld value, void** root, 
                 bool sensitive) {
     String_map* t = malloc(sizeof(String_map));
 
@@ -182,7 +182,7 @@ bool insert_str(const char* key, ld value, void** root,
  * result:          inserts the respective found value
  * return:          if could find the value
  */
-bool find_str(const char* key, void** root, ld* result, 
+bool find_str(const char* key, void** root, lld* result, 
               bool sensitive) {
     String_map* t = malloc(sizeof(String_map));
 
@@ -215,8 +215,7 @@ bool find_str(const char* key, void** root, ld* result,
 /**
  * Set all the labels from a list to a corresponding memory
  */
-void set_labels(Node** l, void** labels, Position mem, int line, 
-                FILE* output) {
+void set_labels(Node** l, void** labels, Position mem, int line) {
     char* tmp;
 
     while (*l != NULL) {
@@ -224,7 +223,7 @@ void set_labels(Node** l, void** labels, Position mem, int line,
 
         // check if something went wrong
         if (!insert_label(tmp, mem, labels, true)) {
-            report_error(output, strcat((*l)->label, 
+            report_error(strcat((*l)->label, 
                     " was already declared!"), -1, 1);
         }
 
@@ -238,7 +237,7 @@ void set_labels(Node** l, void** labels, Position mem, int line,
  *
  * to:              goal position or GO_NEXT to go to next
  */
-void update_position(Position* p, const int to, FILE* output) {
+void update_position(Position* p, const int to) {
     if (to == GO_NEXT) {
         if ((*p).state == left) {
             (*p).state = right;
@@ -250,7 +249,8 @@ void update_position(Position* p, const int to, FILE* output) {
 
             // if the no. of words has exceeded
             else {
-                report_error(output, "Program has exceeded the limit of words!", -1, 1);
+                report_error("Program has exceeded the limit of words!", 
+                             -1, 1);
             }
         }
     } 
@@ -264,8 +264,7 @@ void update_position(Position* p, const int to, FILE* output) {
 
         // if the no. of words has exceeded
         else {
-            report_error(output, 
-                         "Program has exceeded the limit of words!", -1, 1);
+            report_error("Program has exceeded the limit of words!", -1, 1);
         }
     }
 }
@@ -300,7 +299,8 @@ bool match(regex_t* re, const char* word) {
 bool clean_constraints(char* w, bool check) {
     int size = strlen(w);
 
-    if (!check || w[0] == '"' && w[size - 1] == '"') {
+    if ((!check || w[0] == '"' && w[size - 1] == '"')
+        && (size > 1)) {
         memmove (w, w + 1, size - 2);
 
         w[size - 2] = '\0';
@@ -323,7 +323,7 @@ bool clean_constraints(char* w, bool check) {
 /**
  * Align a word in memory
  */
-void align(int factor, Position* cur_pos, FILE* output) {
+void align(int factor, Position* cur_pos) {
     int target_pos;
 
     // set min memory it can occupy as aligned
@@ -335,7 +335,7 @@ void align(int factor, Position* cur_pos, FILE* output) {
     target_pos = min_mul(factor, (*cur_pos).address);
 
     // proceed to position
-    update_position(cur_pos, target_pos, output);
+    update_position(cur_pos, target_pos);
 }
 
 /**
@@ -344,7 +344,7 @@ void align(int factor, Position* cur_pos, FILE* output) {
  * buffer:          hex string to be returned
  * max:             max size of string
  */
-void hex_string(ld number, char* buffer, int max) {
+void hex_string(lld number, char* buffer, int max) {
     int s = 0;
 
     // turn value into hex string
@@ -390,7 +390,7 @@ void format_hex(char* hex) {
  * Fill a word with a given string in current position
  * and proceed to next available memory.
  */
-void fill_word(MemMap* map, Position* cur_pos, char* hex, FILE* output) {
+void fill_word(MemMap* map, Position* cur_pos, char* hex) {
     // set memory as used
     map[(*cur_pos).address].used = true;
 
@@ -400,7 +400,7 @@ void fill_word(MemMap* map, Position* cur_pos, char* hex, FILE* output) {
 
     map[(*cur_pos).address].content[(*cur_pos).state][7] = '\0';
 
-    update_position(cur_pos, GO_NEXT, output);
+    update_position(cur_pos, GO_NEXT);
 
     // remaining digits
     memcpy(map[(*cur_pos).address].content[(*cur_pos).state], 
@@ -408,7 +408,7 @@ void fill_word(MemMap* map, Position* cur_pos, char* hex, FILE* output) {
 
     map[(*cur_pos).address].content[(*cur_pos).state][7] = '\0';
 
-    update_position(cur_pos, GO_NEXT, output);
+    update_position(cur_pos, GO_NEXT);
 }
 
 /**
@@ -437,11 +437,23 @@ void copy_word(MemMap* map, Position target_pos, char* buffer) {
  * Check if current position is place in a
  * a full 40 bit word.
  */
-void check_40bit(Position p, const char* buffer, int line, FILE* output) {
+void check_40bit(Position p, const char* buffer, int line) {
     if (p.state == right) {
-        report_error(output, strcat(buffer, 
-                     " is declared in non-aligned word!"), 
+        report_error(strcat(buffer, " is declared in non-aligned word!"), 
                      line, 1);
+    }
+}
+
+/**
+ * Check if a number has reached its limit value
+ * If so, report an error!
+ */
+void check_limit(lld min, lld max, lld n, int line) {
+    if (n < min || n > max) {
+        char aux[12];
+        sprintf(aux, "%lld", n);
+
+        report_error(strcat(aux, " exceeds the limit size!"), line, 1);
     }
 }
 

@@ -21,6 +21,6 @@
  * exit_code:       the exit code.
  * output:          where the message will be printed
  */
-void report_error(FILE* output, const char* msg, int line, int exit_code);
+void report_error(const char*, int, int);
 
 #endif

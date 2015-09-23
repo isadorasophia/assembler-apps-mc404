@@ -22,7 +22,7 @@
 #define INSTR_REGEX "^[A-Z][A-Za-z]+"                   // INSTRUCTION
 #define DIRECTIVE_REGEX "^\\.[a-z]+$"                   // .directive
 #define HEX_REGEX "^0x[a-fA-F0-9]{0,10}$"               // 0x000...
-#define DEC_REGEX "^-?[0-9]{0,4}$"                      // 1
+#define DEC_REGEX "^-?[0-9]{0,10}$"                     // 1
 
 /* Instructions definition */
 #define _LD 1
@@ -65,7 +65,10 @@ typedef int bool;
 /* Flags handler */
 #define SKIP -1
 
-#define ld long int
+#define lld long long int
+
+/* Max size of a word, by IAS default */
+#define MAX_WORD_VALUE 2147483648
 
 /* ---------------------------------------------------------------------
  * General structures
@@ -114,7 +117,7 @@ typedef struct Label {
  */
 typedef struct String_map {
     char*       key;
-    ld          value;
+    lld          value;
 } String_map;
 
 /* ---------------------------------------------------------------------
@@ -145,19 +148,19 @@ bool find_label(const char*, void**, Position*, bool);
 int compar_str(const void*, const void*);
 
 /* Insert a value of type String_map */
-bool insert_str(const char*, ld, void**, bool);
+bool insert_str(const char*, lld, void**, bool);
 
 /* Find a given value in the binary search tree of type String_map */
-bool find_str(const char*, void**, ld*, bool);
+bool find_str(const char*, void**, lld*, bool);
 
 /* ---------------------------------------------------------------------
  * Data synchronization
  * --------------------------------------------------------------------- */
 /* Set all the labels from a list to a corresponding memory */
-void set_labels(Node**, void**, Position, int, FILE*);
+void set_labels(Node**, void**, Position, int);
 
 /* Updates the position to goal or simply to the next one */
-void update_position(Position*, const int, FILE*);
+void update_position(Position*, const int);
 
 /* ---------------------------------------------------------------------
  * Regex validation
@@ -169,17 +172,17 @@ bool clean_constraints(char*, bool);
  * Functions related to the memory map
  * --------------------------------------------------------------------- */
 /* Align a word in memory */
-void align(int, Position*, FILE*);
+void align(int, Position*);
 
-/* Turn a ld number into a hex string */
-void hex_string(ld, char*, int);
+/* Turn a lld number into a hex string */
+void hex_string(lld, char*, int);
 
 /* Format a hex string into default output */
 void format_hex(char* hex);
 
 /* Fill a word with a constant value in current position
  * and proceed to next available memory */
-void fill_word(MemMap*, Position*, char*, FILE*);
+void fill_word(MemMap*, Position*, char*);
 
 /* Copy word content into buffer */
 void copy_word(MemMap*, Position, char*);
@@ -189,7 +192,10 @@ void copy_word(MemMap*, Position, char*);
  * --------------------------------------------------------------------- */
 /* Check if current position is placed in a
  * a full 40 bit word */
-void check_40bit(Position, const char*, int, FILE*);
+void check_40bit(Position, const char*, int);
+
+/* Check if a number has reached its limit value */
+void check_limit(lld, lld, lld, int);
 
 /* Check if a given instruction receives an argument */
 bool check_arg(char*);

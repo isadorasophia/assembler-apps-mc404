@@ -63,7 +63,6 @@ void skip_line (File*);
 void read_argument (File*, int);
 
 /* Read an argument converted in string, either in hex or decimal */
-ld read_constant(char* buffer, int line, FILE* output,
-                 regex_t*, regex_t*);
+lld read_constant(char*, int, lld, lld, bool, regex_t*, regex_t*);
 
 #endif

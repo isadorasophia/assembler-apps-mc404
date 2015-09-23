@@ -26,14 +26,14 @@ void initialize_file(File* f, char* input, char* output) {
 
     // if the file could not be open
     if (f->out == NULL) {
-        report_error(f->out, strcat(output, " could not be open."), FILE_ERROR, 1);
+        report_error(strcat(output, " could not be open."), FILE_ERROR, 1);
     }
 
     f->in = fopen(input, "r");
 
     // if the file could not be found
     if (f->in == NULL) {
-        report_error(f->out, strcat(input, " could not be found."), FILE_ERROR, 1);
+        report_error(strcat(input, " could not be found."), FILE_ERROR, 1);
     }
 
     f->line = 1;
@@ -148,7 +148,7 @@ void read_argument (File* f, int cur_line) {
     // check if an error occurred
     if (!read_file(f) || 
         (cur_line != SKIP && cur_line != f->line)) {
-        report_error(f->out, strcat(f->buffer, " is placed incorrectly!"), 
+        report_error(strcat(f->buffer, " is placed incorrectly!"), 
                      f->line, 1);
     }
 }
@@ -157,22 +157,29 @@ void read_argument (File* f, int cur_line) {
  * Read an argument converted in string, either in hex or decimal.
  * Report an error if it wasn't declared correctly.
  *
- * return:          its value in decimal 
+ * min:             minimum value of decimal number
+ * max:             maximum value of decimal number
+ * hex:             can it be a hex value?
+ * return:          value in decimal 
  */
-ld read_constant(char* buffer, int line, FILE* output,
-                 regex_t* decimal_regex, regex_t* hex_regex) {
-    ld tmp_ld;
+lld read_constant(char* buffer, int line, lld min, lld max,
+                 bool hex, regex_t* decimal_regex, regex_t* hex_regex) {
+    lld tmp_lld;
 
     if (match(decimal_regex, buffer)) {
         // save value
-        tmp_ld = atol(buffer);
+        tmp_lld = atol(buffer);
+
+        /* Since its a decimal value, make sure 
+         * it has a proper size */
+        check_limit(min, max, tmp_lld, line);
     } else if (match(hex_regex, buffer)) {
         // save value as decimal
-        sscanf(buffer, "%lx", &tmp_ld);
+        sscanf(buffer, "%llx", &tmp_lld);
     } else {
         // none of them, report an error!
-        report_error(output, strcat(buffer, " is not a valid argument!"), line, 1);
+        report_error(strcat(buffer, " is not a valid argument!"), line, 1);
     }
 
-    return tmp_ld;
+    return tmp_lld;
 }
