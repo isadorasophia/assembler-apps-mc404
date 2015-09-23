@@ -1,0 +1,26 @@
+
+             SystemC 2.3.0-ASI --- Apr  8 2014 12:04:41
+        Copyright (c) 1996-2012 by all Contributors,
+        ALL RIGHTS RESERVED
+
+ArchC: microSD: Loading SD card file: disk.img
+ArchC: Reading flat binary file: /home/specg12-1/mc404/simulador/dumboot.bin
+
+Info: (I804) /IEEE_Std_1666/deprecated: interface and/or port binding in port constructors is deprecated
+ArchC: -------------------- Starting Simulation --------------------
+
+Dumboot Bootstrap v1.0 - ARM ArchC model at LSC-UNICAMP
+
+Boot Reason: [POR]
+Boot Device: [SD]
+MMC Initialized.
+
+Transfering control to loaded code at 0x778005e00...
+
+Booted DummyOS.
+Isadora - ra158018
+ArchC: INTERUPTED BY THE SIGNAL 2
+ArchC: Simulation statistics
+    Times: 34.95 user, 1.40 system, 36.37 real
+    Number of instructions executed: 357326823
+    Simulation speed: 10223.94 K instr/s
