@@ -248,10 +248,8 @@ void update_position(Position* p, const int to) {
             if ((*p).address + 1 < MAX_WORDS) {
                 (*p).state = left;
                 (*p).address++;
-            }
-
-            // if the no. of words has exceeded
-            else {
+            } else {
+                // if the no. of words has exceeded
                 report_error("Program has exceeded the limit of words!", 
                              -1, 1);
             }

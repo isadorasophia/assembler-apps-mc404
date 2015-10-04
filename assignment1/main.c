@@ -195,7 +195,7 @@ int main (int argc, char *argv[]) {
 
                     align((int)tmp_lld, &cur_pos);
                 } else if (!strcmp(file.buffer, ".wfill")) {
-                    // doesit occupy only a 20-bit command?
+                    // does it occupy only a 20-bit command?
                     check_40bit(cur_pos, file.buffer, file.line);
 
                     /* 1st argument! */
