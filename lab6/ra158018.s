@@ -57,11 +57,10 @@ min:
         b loop                  @ Refaz toda a logica
         
 
-end:                            @ Parar o robo
-        mov r0, #0              
-        mov r1, #0
+turn:                           @ Virar o robo
+        mov r0, #10             
+        mov r1, #20
         mov r7, #124
         svc 0x0
 
-        mov r7, #1              @ syscall exit
-        svc 0x0
+        b loop
