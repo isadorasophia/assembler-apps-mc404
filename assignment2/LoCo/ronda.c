@@ -26,12 +26,20 @@
 
 uint total_time;
 
+/* Functions signatures */
+void timer();
+void turn_90_right();
+void forward();
+void set_alarm();
+void near_wall_left();
+void near_wall_right();
+
 int main() {
     /* Initialize timer */
     total_time = 1;
 
     /* Set alarm */
-    set_alarm(f);
+    set_alarm();
 
     /* Set proximity callbacks */
     registry_proximity_callback(LEFT_SONAR_ID, MIN_DISTANCE, &near_wall_left);
