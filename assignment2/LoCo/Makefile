@@ -1,5 +1,6 @@
 MAINFILE = ronda
 API = ../BiCo/api_robot2
+SO = ../SOUL/SOUL
 OUTPUT = robot_ctrl
 
 BIN_PATH = /home/mc404/usr/bin
@@ -17,13 +18,19 @@ $(OUTPUT): $(MAINFILE).o $(API).o
 	arm-eabi-ld $(MAINFILE).o $(API).o -o $(OUTPUT) -Ttext=0x77802000
 
 mkimage: $(OUTPUT)
-	mksd.sh --so $(BIN_PATH)/knrl  --user $(OUTPUT)
+	mksd.sh --so $(SO) --user $(OUTPUT)
 
-simulate_target: disk.img
+player_target: disk.img
 	player $(WORLDS_PATH)/simple.cfg
 
-simulate_host: disk.img
-	armsim_player --rom=/home/bonnibel/graduation/mc404/simulador/dumboot.bin --sd=disk.img
+player_host: disk.img
+	armsim_player --rom=$(BIN_PATH)/dumboot.bin --sd=disk.img
+
+gdb_target: disk.img
+	arm-sim --rom=$(BIN_PATH)/dumboot.bin --sd=disk.img -gdb_target
+
+gdb host: disk.img
+	arm-eabi-gdb $(SO)
 
 clean:
-	rm -f $(OUTPUT) *.o $(MAINFILE).s
+	rm -f $(OUTPUT) *.o $(MAINFILE).s disk.img
