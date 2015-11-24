@@ -7,7 +7,7 @@
 
 # ----------------------------------
 # SOUL object files -- Add your SOUL object files here 
-SOUL_OBJS=SOUL/soul.o 
+SOUL_OBJS=./SOUL/soul.o 
 
 # ----------------------------------
 # Compiling/Assembling/Linking Tools and flags
@@ -29,7 +29,7 @@ all: disk.img
 %.o: %.s
 	$(AS) $(AS_FLAGS) $< -o $@
 
-%.o: %.c
+%.s: %.c
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 # ----------------------------------
