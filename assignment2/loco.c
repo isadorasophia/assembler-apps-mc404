@@ -7,7 +7,7 @@
  *
  * ********************************************************************* */
 
-#include "../BiCo/api_robot2.h"
+#include "bico.h"
 
 #define uint unsigned int
 

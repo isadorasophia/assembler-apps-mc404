@@ -7,7 +7,7 @@
 
 # ----------------------------------
 # SOUL object files -- Add your SOUL object files here 
-SOUL_OBJS=./SOUL/soul.o 
+SOUL_OBJS=./SOUL/SOUL.o 
 
 # ----------------------------------
 # Compiling/Assembling/Linking Tools and flags
