@@ -7,7 +7,6 @@
  *
  * ********************************************************************* */
 
-#include <stdio.h>
 #include "../BiCo/api_robot2.h"
 
 #define uint unsigned int
@@ -42,8 +41,8 @@ int main() {
     set_alarm();
 
     /* Set proximity callbacks */
-    registry_proximity_callback(LEFT_SONAR_ID, MIN_DISTANCE, &near_wall_left);
-    registry_proximity_callback(RIGHT_SONAR_ID, MIN_DISTANCE, &near_wall_right);
+    register_proximity_callback(LEFT_SONAR_ID, MIN_DISTANCE, &near_wall_left);
+    register_proximity_callback(RIGHT_SONAR_ID, MIN_DISTANCE, &near_wall_right);
 
     /* Go! */
     forward();
@@ -94,11 +93,11 @@ void set_alarm() {
 void near_wall_left() {
     turn_90_right();
 
-    registry_proximity_callback(LEFT_SONAR_ID, MIN_DISTANCE, &near_wall_left);
+    register_proximity_callback(LEFT_SONAR_ID, MIN_DISTANCE, &near_wall_left);
 }
 
 void near_wall_right() {
     turn_90_right();
 
-    registry_proximity_callback(RIGHT_SONAR_ID, MIN_DISTANCE, &near_wall_right);
+    register_proximity_callback(RIGHT_SONAR_ID, MIN_DISTANCE, &near_wall_right);
 }

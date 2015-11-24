@@ -2,7 +2,7 @@ MAINFILE = ronda
 API = ../BiCo/api_robot2
 OUTPUT = robot_ctrl
 
-BIN_PATH = /home/mc404/usr
+BIN_PATH = /home/mc404/usr/bin
 WORLDS_PATH = /home/mc404/usr/worlds_mc404
 
 all: mkimage

@@ -7,8 +7,8 @@
 @ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @
 
 @ Global symbol
-.global set_motor_speed, set_motors_speed, read_sonar, read_sonars, 
-        register_proximity_callback, add_alarm, get_time, set_time
+.global set_motor_speed, set_motors_speed, read_sonar, read_sonars
+.global register_proximity_callback, add_alarm, get_time, set_time
 
 .align 4
 @@@@@@@@@
