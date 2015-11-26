@@ -7,7 +7,7 @@
 
 # ----------------------------------
 # SOUL object files -- Add your SOUL object files here 
-SOUL_OBJS=./SOUL/SOUL.o 
+SOUL_OBJS=SOUL.o 
 
 # ----------------------------------
 # Compiling/Assembling/Linking Tools and flags
@@ -29,16 +29,16 @@ all: disk.img
 %.o: %.s
 	$(AS) $(AS_FLAGS) $< -o $@
 
-%.s: %.c
+%.o: %.c
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 # ----------------------------------
 # Specific Rules
 SOUL.x: $(SOUL_OBJS)
-	$(LD) $^ -o $@ $(LD_FLAGS) --section-start=.iv=0x778005e0 -Ttext=0x77800700 -Tdata=0x77801800 -e 0x778005e0
+	$(LD) $^ -o $@ $(LD_FLAGS) --section-start=.iv=0x778005e0 -Ttext=0x77800700 -Tdata=0x77801000 -e 0x778005e0
 
 LOCO.x: loco.o bico.o
-	$(LD) $^ -o $@ $(LD_FLAGS) -Ttext=0x77802000
+	$(LD) $^ -o $@ $(LD_FLAGS) -Ttext=0x77802a00
 
 disk.img: SOUL.x LOCO.x
 	mksd.sh --so SOUL.x --user LOCO.x
