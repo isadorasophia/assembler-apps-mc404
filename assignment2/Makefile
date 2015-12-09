@@ -22,7 +22,7 @@ LD_FLAGS=-g
 
 # ----------------------------------
 # Default rule
-all: disk.img
+all: ronda
 
 # ----------------------------------
 # Generic Rules
@@ -37,11 +37,17 @@ all: disk.img
 SOUL.x: $(SOUL_OBJS)
 	$(LD) $^ -o $@ $(LD_FLAGS) --section-start=.iv=0x778005e0 -Ttext=0x77800700 -Tdata=0x77801000 -e 0x778005e0
 
-LOCO.x: loco.o bico.o
+RONDA.x: ronda.o bico.o
 	$(LD) $^ -o $@ $(LD_FLAGS) -Ttext=0x77802a00
 
-disk.img: SOUL.x LOCO.x
-	mksd.sh --so SOUL.x --user LOCO.x
+SEGUE-PAREDE.x: segue-parede.o bico.o
+	$(LD) $^ -o $@ $(LD_FLAGS) -Ttext=0x77802a00
+
+ronda: SOUL.x RONDA.x
+	mksd.sh --so SOUL.x --user RONDA.x
+
+segue-parede: SOUL.x SEGUE-PAREDE.x
+	mksd.sh --so SOUL.x --user SEGUE-PAREDE.x
 
 clean:
-	rm -f SOUL.x LOCO.x disk.img *.o
+	rm -f *.x disk.img *.o

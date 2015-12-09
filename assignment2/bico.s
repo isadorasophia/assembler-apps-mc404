@@ -52,7 +52,7 @@ read_sonar:
     mov r7, #16
     svc 0x0                     @ make the syscall
 
-    str r0, [r1]                @ save distance
+    strh r0, [r1]               @ save distance
 
     ldmfd sp!, {r0, r7, pc}     @ Restore the registers and 
 
